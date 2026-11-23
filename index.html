@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>玄機六合・四象 AI 圓桌推算館</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+TC:wght@500;600;700;900&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang HK", "Microsoft JhengHei", sans-serif;
+      background-color: #09070a;
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(180, 83, 9, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 20%, rgba(153, 27, 27, 0.14) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(217, 119, 6, 0.08) 0%, transparent 50%);
+      color: #f1e9d8;
+    }
+    .font-serif-tc {
+      font-family: 'Noto Serif TC', Georgia, serif;
+    }
+    /* Rotating subtle Bagua aura */
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .bagua-spin {
+      animation: spinSlow 65s linear infinite;
+    }
+    /* Shake animation for Kau Cim tube */
+    @keyframes tubeShake {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      15% { transform: rotate(-11deg) translateY(-4px); }
+      30% { transform: rotate(10deg) translateY(2px); }
+      45% { transform: rotate(-12deg) translateY(-5px); }
+      60% { transform: rotate(9deg) translateY(1px); }
+      75% { transform: rotate(-7deg) translateY(-3px); }
+      90% { transform: rotate(5deg) translateY(0); }
+    }
+    .animate-tube-shake {
+      animation: tubeShake 0.55s ease-in-out infinite;
+    }
+    /* Stick pop out */
+    @keyframes stickPop {
+      0% { transform: translateY(24px) scale(0.85); opacity: 0; }
+      60% { transform: translateY(-6px) scale(1.05); opacity: 1; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .animate-stick-pop {
+      animation: stickPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    /* Coin flip */
+    @keyframes coinFlip {
+      0% { transform: rotateY(0deg) scale(1); }
+      50% { transform: rotateY(540deg) scale(1.18); }
+      100% { transform: rotateY(1080deg) scale(1); }
+    }
+    .animate-coin-flip {
+      animation: coinFlip 0.55s ease-out;
+    }
+    /* Ball pop */
+    @keyframes ballPop {
+      0% { transform: scale(0.3) rotate(-25deg); opacity: 0; }
+      70% { transform: scale(1.12) rotate(5deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .animate-ball-pop {
+      animation: ballPop 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+    /* Authentic HKJC Mark Six 3D glossy balls */
+    .m6-ball {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.35rem;
+      height: 2.35rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: #ffffff;
+      box-shadow: inset -3px -4px 8px rgba(0, 0, 0, 0.45), inset 2px 3px 6px rgba(255, 255, 255, 0.35), 0 4px 10px rgba(0, 0, 0, 0.45);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .m6-ball-sm { width: 1.85rem; height: 1.85rem; font-size: 0.78rem; }
+    .m6-ball-lg { width: 2.75rem; height: 2.75rem; font-size: 1.05rem; }
+    .ball-red { background: radial-gradient(circle at 30% 30%, #f87171, #dc2626 65%, #991b1b); border: 1px solid #fca5a5; }
+    .ball-blue { background: radial-gradient(circle at 30% 30%, #60a5fa, #2563eb 65%, #1e40af); border: 1px solid #93c5fd; }
+    .ball-green { background: radial-gradient(circle at 30% 30%, #4ade80, #16a34a 65%, #166534); border: 1px solid #86efac; }
+    .ball-banker {
+      box-shadow: 0 0 0 3px #f59e0b, inset -3px -4px 8px rgba(0,0,0,0.45), 0 4px 16px rgba(245, 158, 11, 0.55);
+    }
+    .mystic-card {
+      background: linear-gradient(165deg, rgba(24, 18, 22, 0.92) 0%, rgba(14, 13, 19, 0.94) 100%);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(212, 175, 55, 0.28);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(253, 230, 138, 0.08);
+    }
+    .cinnabar-seal {
+      border: 1.5px solid #dc2626;
+      color: #fca5a5;
+      background: rgba(153, 27, 27, 0.22);
+      font-family: 'Noto Serif TC', serif;
+    }
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #fef08a 0%, #d4af37 50%, #f59e0b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #120e14; }
+    ::-webkit-scrollbar-thumb { background: #443527; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6b5239; }
+  </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-amber-500/30 selection:text-amber-200 relative overflow-x-hidden">
+  <!-- Subtle Mystical Background Bagua Watermark -->
+  <div class="fixed inset-0 pointer-events-none flex items-center justify-center opacity-[0.04] z-0 overflow-hidden">
+    <svg class="w-[760px] h-[760px] text-amber-400 bagua-spin" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="1">
+      <circle cx="100" cy="100" r="95" />
+      <circle cx="100" cy="100" r="76" stroke-dasharray="4 3" />
+      <circle cx="100" cy="100" r="46" />
+      <path d="M100 54 A23 23 0 0 1 100 100 A23 23 0 0 0 100 146" />
+      <polygon points="100,10 178,55 178,145 100,190 22,145 22,55" opacity="0.55" />
+    </svg>
+  </div>
+
+  <!-- Top Navigation -->
+  <header class="sticky top-0 z-40 border-b border-amber-500/25 bg-[#0d0a0f]/92 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-900/50 via-amber-900/30 to-stone-900 border border-amber-400/50 flex items-center justify-center shrink-0 shadow-inner">
+          <svg class="w-6 h-6 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 3a4.5 4.5 0 0 1 0 9 4.5 4.5 0 0 0 0 9" />
+            <circle cx="12" cy="7.5" r="1" fill="currentColor" />
+            <circle cx="12" cy="16.5" r="1" fill="currentColor" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg sm:text-xl font-bold font-serif-tc gold-gradient-text tracking-wider">玄機六合・太極 AI 推算殿</h1>
+            <span class="hidden sm:inline-block cinnabar-seal text-[10px] px-1.5 py-0.5 rounded font-bold tracking-widest">天機印</span>
+          </div>
+          <p class="text-xs text-amber-200/60">鐵板神算・周易卜辭・靈籤問事 × 四大 AI 圓桌推演</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="flex items-center bg-stone-900/90 border border-amber-500/30 rounded-lg p-0.5 text-xs">
+          <button id="modeSimBtn" type="button" class="px-2.5 py-1.5 rounded-md font-medium transition bg-amber-500 text-stone-950">模擬玄算</button>
+          <button id="modeLiveBtn" type="button" class="px-2.5 py-1.5 rounded-md font-medium transition text-amber-100/80 hover:text-white">真實 API</button>
+        </div>
+        <button id="openApiModalBtn" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-900 hover:bg-stone-800 border border-amber-500/35 text-amber-200 transition">
+          <span>🔑 API 設定</span>
+          <span id="apiCountBadge" class="px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px]">0/4</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
+
+  <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <!-- Top Banner -->
+    <section class="mystic-card rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="space-y-1">
+        <div class="inline-flex items-center gap-2 text-xs font-medium text-amber-300 bg-red-950/60 border border-red-500/30 px-2.5 py-0.5 rounded-full">
+          <span>🏮 內建 100 期開獎庫（預設分析近 20 期，可自選 1–100 期）｜資料全數選填</span>
+        </div>
+        <p class="text-sm text-stone-300">
+          你可先於「玄壇求籤／周易卜辭」問事求靈碼，或直接填寫／留空命主資料、Tick 選學派，由四大 AI 大師圓桌推算單式、複式或膽拖號碼。
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 shrink-0">
+        <button id="openHistoryModalBtn" type="button" class="px-3 py-2 rounded-xl text-xs font-medium bg-stone-900 hover:bg-stone-800 border border-amber-500/25 text-amber-100 transition">
+          📊 歷史開獎紀錄
+        </button>
+        <button id="clearAllInputsBtn" type="button" class="px-3 py-2 rounded-xl text-xs font-medium bg-stone-900 hover:bg-stone-800 border border-stone-700 text-stone-300 transition">
+          🎲 清空改用全隨機
+        </button>
+        <button id="fillSampleBtn" type="button" class="px-3 py-2 rounded-xl text-xs font-medium bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-300 transition">
+          ✨ 載入範例資料
+        </button>
+      </div>
+    </section>
+
+    <!-- NEW Interactive Mystical Pavilion: 求籤系統 + 周易卜辭動畫問事 -->
+    <section class="mystic-card rounded-2xl p-5 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-amber-500/20 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="cinnabar-seal text-xs px-2 py-0.5 rounded font-bold">玄壇互動</span>
+          <h2 class="text-base sm:text-lg font-bold font-serif-tc text-amber-300">靈籤求問 &amp; 周易卜辭動畫占卜</h2>
+        </div>
+        <div class="flex bg-stone-950/90 p-1 rounded-xl border border-amber-500/25 text-xs">
+          <button id="tabOracleBtn" type="button" class="px-3 py-1.5 rounded-lg font-semibold transition bg-gradient-to-r from-red-800 to-amber-700 text-amber-100">☯️ 周易卜辭動畫問事</button>
+          <button id="tabLotBtn" type="button" class="px-3 py-1.5 rounded-lg font-semibold transition text-stone-400 hover:text-amber-200">🏮 靈籤筒求籤</button>
+        </div>
+      </div>
+
+      <!-- Panel A: 周易卜辭動畫問事 -->
+      <div id="oraclePanel" class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <div class="lg:col-span-5 space-y-3">
+          <label class="block text-xs text-amber-200/80" for="oracleQuestionInput">心中默念所問之事（選填，例如：今期財運如何？事業轉工好嗎？）</label>
+          <input id="oracleQuestionInput" type="text" placeholder="留空亦可直接誠心擲銅錢起卦問事..." class="w-full bg-stone-950/80 border border-amber-500/30 rounded-xl px-3 py-2.5 text-sm text-amber-50 focus:border-amber-400 focus:outline-none" />
+
+          <!-- Animated 3 Coins Visual -->
+          <div class="rounded-xl bg-stone-950/80 border border-amber-500/20 p-4 flex flex-col items-center justify-center gap-3">
+            <div class="flex items-center gap-4">
+              <div id="coin1" class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-300 via-amber-600 to-amber-900 border-2 border-amber-200/70 flex items-center justify-center shadow-lg">
+                <div class="w-4 h-4 border border-amber-100/80 bg-stone-950"></div>
+              </div>
+              <div id="coin2" class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-300 via-amber-600 to-amber-900 border-2 border-amber-200/70 flex items-center justify-center shadow-lg">
+                <div class="w-4 h-4 border border-amber-100/80 bg-stone-950"></div>
+              </div>
+              <div id="coin3" class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-300 via-amber-600 to-amber-900 border-2 border-amber-200/70 flex items-center justify-center shadow-lg">
+                <div class="w-4 h-4 border border-amber-100/80 bg-stone-950"></div>
+              </div>
+            </div>
+            <span id="coinCastProgress" class="text-[11px] text-amber-300/80">準備擲銅錢六次成卦</span>
+          </div>
+
+          <button id="castOracleBtn" type="button" class="w-full py-2.5 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-red-800 via-amber-700 to-amber-600 text-amber-50 border border-amber-400/40 shadow-lg hover:brightness-110 transition">
+            🪙 擲銅錢起卦（卜辭解答）
+          </button>
+        </div>
+
+        <div class="lg:col-span-7 rounded-xl bg-stone-950/80 border border-amber-500/25 p-4 min-h-[190px] flex flex-col justify-between gap-3">
+          <div class="flex flex-col sm:flex-row gap-4 items-center sm:items-start">
+            <!-- 6-line Hexagram Stack (bottom to top) -->
+            <div class="shrink-0 w-32 rounded-xl bg-stone-900/90 border border-amber-500/20 p-3 flex flex-col items-center gap-1.5">
+              <span class="text-[10px] text-amber-400/80 tracking-widest mb-0.5">周易本卦</span>
+              <div id="hexagramLinesBox" class="w-full flex flex-col-reverse gap-1.5 min-h-[96px] justify-center">
+                <div class="text-[11px] text-stone-500 text-center">待起六爻</div>
+              </div>
+            </div>
+
+            <!-- Oracle Interpretation -->
+            <div class="flex-1 space-y-2 text-xs sm:text-sm">
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 id="oracleHexTitle" class="text-base font-bold font-serif-tc text-amber-300">尚未起卦</h3>
+                <span id="oracleHexTag" class="hidden text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-200 border border-amber-500/30"></span>
+              </div>
+              <p id="oracleBuciText" class="text-amber-100/90 font-serif-tc italic leading-relaxed">
+                請輸入心中疑惑（或留空），按下「擲銅錢起卦」，銅錢將逐爻顯現周易卦象與古籍卜辭解答。
+              </p>
+              <p id="oracleAnswerText" class="text-stone-300 text-xs leading-relaxed"></p>
+            </div>
+          </div>
+          <div id="oracleLuckyRow" class="hidden pt-2 border-t border-amber-500/15 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-amber-300">✨ 卦象賜吉碼：</span>
+              <div id="oracleLuckyBalls" class="flex items-center gap-1.5"></div>
+            </div>
+            <button id="applyOracleSeedBtn" type="button" class="text-xs px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/30 transition">
+              套用至起卦心水數
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel B: 靈籤筒求籤系統 -->
+      <div id="lotPanel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+        <div class="lg:col-span-4 flex flex-col items-center justify-center gap-3 p-4 rounded-xl bg-stone-950/80 border border-amber-500/20">
+          <div class="relative h-36 flex items-end justify-center">
+            <!-- Popped Fortune Stick -->
+            <div id="fortuneStickVisual" class="hidden absolute -top-2 w-4 h-24 bg-gradient-to-b from-red-600 via-amber-300 to-amber-600 rounded-t-sm border border-amber-200 shadow-lg flex items-start justify-center pt-1">
+              <span class="text-[9px] font-bold text-red-950 font-serif-tc writing-vertical">靈籤</span>
+            </div>
+            <!-- Bamboo Tube -->
+            <div id="bambooTube" class="relative w-20 h-28 rounded-b-2xl rounded-t-md bg-gradient-to-r from-amber-900 via-amber-700 to-amber-950 border-2 border-amber-500/60 shadow-2xl flex flex-col items-center justify-center">
+              <div class="w-full h-2 bg-amber-950/80 border-b border-amber-400/40 absolute top-3"></div>
+              <span class="font-serif-tc text-amber-200 font-bold text-sm tracking-widest border border-amber-400/50 px-1.5 py-1 rounded bg-red-950/70">玄壇靈籤</span>
+            </div>
+          </div>
+          <input id="lotQuestionInput" type="text" placeholder="所求何事？（選填：偏財／事業／問安）" class="w-full bg-stone-900 border border-amber-500/25 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-amber-400 focus:outline-none" />
+          <button id="shakeLotBtn" type="button" class="w-full py-2.5 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-red-800 via-red-700 to-amber-600 text-amber-50 border border-amber-400/40 shadow-lg hover:brightness-110 transition">
+            🎋 搖動籤筒求靈籤
+          </button>
+        </div>
+
+        <div class="lg:col-span-8 rounded-xl bg-stone-950/80 border border-amber-500/25 p-4 space-y-3 min-h-[190px]">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-amber-500/15 pb-2">
+            <h3 id="lotTitle" class="text-base font-bold font-serif-tc text-amber-300">誠心搖籤・靜候神諭</h3>
+            <span id="lotRankBadge" class="hidden text-xs px-2.5 py-0.5 rounded-full font-bold"></span>
+          </div>
+          <p id="lotPoem" class="font-serif-tc text-sm sm:text-base text-amber-100 leading-relaxed whitespace-pre-line">
+            點擊左側「搖動籤筒求靈籤」，竹筒搖動後將落下專屬靈籤詩詞與解籤指點。
+          </p>
+          <p id="lotExplain" class="text-xs text-stone-300 leading-relaxed"></p>
+          <div id="lotLuckyRow" class="hidden pt-2 border-t border-amber-500/15 flex flex-wrap items-center gap-2">
+            <span class="text-xs text-amber-300">🏮 靈籤賜福號碼：</span>
+            <div id="lotLuckyBalls" class="flex items-center gap-1.5"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Left Column: Step 1 & Step 2 -->
+      <div class="lg:col-span-5 space-y-6">
+        <!-- Step 1: Completely Optional Inputs -->
+        <section class="mystic-card rounded-2xl p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-amber-500/20 pb-3">
+            <h2 class="text-base font-bold font-serif-tc text-amber-300 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-red-900/70 border border-amber-400/50 text-amber-200 text-xs flex items-center justify-center">1</span>
+              命主與時空資料（全可選填）
+            </h2>
+            <span class="text-[11px] text-amber-200/70">留空自動隨機起局</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-12 gap-2.5">
+            <div class="sm:col-span-3">
+              <label class="block text-xs text-stone-400 mb-1" for="birthYear">出生年</label>
+              <input id="birthYear" type="number" min="1920" max="2026" placeholder="隨機" value="1990" class="w-full bg-stone-950/90 border border-stone-700 rounded-lg px-2.5 py-2 text-sm text-white focus:border-amber-400 focus:outline-none" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs text-stone-400 mb-1" for="birthMonth">月</label>
+              <input id="birthMonth" type="number" min="1" max="12" placeholder="隨機" value="8" class="w-full bg-stone-950/90 border border-stone-700 rounded-lg px-2 py-2 text-sm text-white focus:border-amber-400 focus:outline-none" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs text-stone-400 mb-1" for="birthDay">日</label>
+              <input id="birthDay" type="number" min="1" max="31" placeholder="隨機" value="18" class="w-full bg-stone-950/90 border border-stone-700 rounded-lg px-2 py-2 text-sm text-white focus:border-amber-400 focus:outline-none" />
+            </div>
+            <div class="sm:col-span-5">
+              <label class="block text-xs text-stone-400 mb-1" for="birthTime">出生時間</label>
+              <input id="birthTime" type="time" value="14:30" class="w-full bg-stone-950/90 border border-stone-700 rounded-lg px-2.5 py-2 text-sm text-white focus:border-amber-400 focus:outline-none" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-stone-400 mb-1" for="gender">性別（選填）</label>
+              <select id="gender" class="w-full bg-stone-950/90 border border-stone-700 rounded-lg px-2.5 py-2 text-sm text-white focus:border-amber-400 focus:outline-none">
+                <option value="random">不指定（隨機陰陽）</option>
+                <option value="male" selected>男（乾造）</option>
+                <option value="female">女（坤造）</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-stone-400 mb-1" for="birthPlace">出生地點（選填）</label>
+              <input id="birthPlace" type="text" value="香港" placeholder="留空則以香港／隨機論" class="w-full bg-stone-950/90 border border-stone-700 rounded-lg px-2.5 py-2 text-sm text-white focus:border-amber-400 focus:outline-none" />
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-xs text-stone-400" for="bettingBranch">六合彩投注站／網上投注地址（選填）</label>
+            <select id="bettingBranch" class="w-full bg-stone-950/90 border border-stone-700 rounded-lg px-2.5 py-2 text-sm text-white focus:border-amber-400 focus:outline-none">
+              <option value="random">不指定／隨機感應方位</option>
+              <option value="屯門市廣場|屯門市廣場第3期地段277號地下|西北・乾卦(金)">1. 屯門市廣場（屯門市廣場第3期地段277號地下）</option>
+              <option value="中環士丹利街|中環士丹利街10-12號地下至三樓2號舖|正西/中・兌卦(金)" selected>2. 中環士丹利街（士丹利街10-12號地下至三樓2號舖）</option>
+              <option value="荃灣青山道|荃灣青山公路300-350號荃錦中心地下B2舖|西北・乾卦(金)">3. 荃灣青山道（荃錦中心地下B2舖）</option>
+              <option value="尖沙咀漢口道|尖沙咀漢口道39-41號麥仕維中心地下|正南・離卦(火)">4. 尖沙咀漢口道（漢口道39-41號麥仕維中心地下）</option>
+              <option value="上環干諾道西|上環干諾道西3號億利商業大廈地下D-F及G1舖|正北・坎卦(水)">5. 上環干諾道西（干諾道西3號億利商業大廈地下）</option>
+              <option value="觀塘廣場|觀塘開源道68號觀塘廣場地下G15,M20,116號舖|東南・巽卦(木)">6. 觀塘廣場（開源道68號觀塘廣場地下）</option>
+              <option value="九龍灣德福|九龍灣宏開道16號德福大廈1樓4號舖|正東・震卦(木)">7. 九龍灣德福（宏開道16號德福大廈1樓4號舖）</option>
+              <option value="大埔廣場|大埔廣場地下商場7號舖|東北・艮卦(土)">8. 大埔廣場（大埔廣場地下商場7號舖）</option>
+              <option value="上水石湖墟|上水石湖墟新豐路134-140A號A地下|正北・坎卦(水)">9. 上水石湖墟（新豐路134-140A號A地下）</option>
+              <option value="大埔廣福道|大埔廣福道158-172號大埔商業大廈地下|東北・艮卦(土)">10. 大埔廣福道（廣福道158-172號大埔商業大廈地下）</option>
+              <option value="online">網上投注／自訂投注地址（可自行輸入地址）</option>
+            </select>
+            <input id="customBranchInput" type="text" placeholder="請輸入網上投注所在地址／地區，或自訂投注站（例：旺角彌敦道／家中書房）" class="hidden w-full bg-stone-950 border border-amber-500/45 rounded-lg px-2.5 py-2 text-sm text-white focus:border-amber-400 focus:outline-none" />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-stone-400 mb-1" for="purchaseDateTime">預計買入日期與時間（選填）</label>
+              <input id="purchaseDateTime" type="datetime-local" value="2026-11-24T17:30" class="w-full bg-stone-950/90 border border-stone-700 rounded-lg px-2.5 py-2 text-sm text-white focus:border-amber-400 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs text-stone-400 mb-1" for="ichingSeed">起卦心水數（選填 1–999）</label>
+              <input id="ichingSeed" type="number" min="1" max="999" placeholder="留空則自動隨機／按時起卦" class="w-full bg-stone-950/90 border border-stone-700 rounded-lg px-2.5 py-2 text-sm text-white focus:border-amber-400 focus:outline-none" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 2: 7 Schools including 鐵板神算 & 周易 -->
+        <section class="mystic-card rounded-2xl p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-amber-500/20 pb-3">
+            <h2 class="text-base font-bold font-serif-tc text-amber-300 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-red-900/70 border border-amber-400/50 text-amber-200 text-xs flex items-center justify-center">2</span>
+              Tick 選推算學派與指派 AI 大師
+            </h2>
+            <div class="flex items-center gap-2 text-xs">
+              <button id="selectAllSchoolsBtn" type="button" class="text-amber-300 hover:underline">全選</button>
+              <span class="text-stone-600">|</span>
+              <button id="clearSchoolsBtn" type="button" class="text-stone-400 hover:text-stone-200">清除</button>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-stone-950/80 border border-amber-500/25 p-3 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-amber-200">🤖 選擇加入圓桌的 AI 模型：</span>
+              <span class="text-[11px] text-stone-400">可單選或多選</span>
+            </div>
+            <div id="activeAiChips" class="flex flex-wrap gap-2 text-xs">
+              <label class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-500/15 border border-sky-500/35 text-sky-200 cursor-pointer">
+                <input type="checkbox" class="ai-invite-cb rounded border-stone-600 bg-stone-900 text-amber-500 focus:ring-0" value="deepseek" checked />
+                DeepSeek
+              </label>
+              <label class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/15 border border-orange-500/35 text-orange-200 cursor-pointer">
+                <input type="checkbox" class="ai-invite-cb rounded border-stone-600 bg-stone-900 text-amber-500 focus:ring-0" value="claude" checked />
+                Claude
+              </label>
+              <label class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/35 text-emerald-200 cursor-pointer">
+                <input type="checkbox" class="ai-invite-cb rounded border-stone-600 bg-stone-900 text-amber-500 focus:ring-0" value="chatgpt" checked />
+                ChatGPT
+              </label>
+              <label class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/15 border border-indigo-500/35 text-indigo-200 cursor-pointer">
+                <input type="checkbox" class="ai-invite-cb rounded border-stone-600 bg-stone-900 text-amber-500 focus:ring-0" value="gemini" checked />
+                Gemini
+              </label>
+            </div>
+            <label class="flex items-center gap-2 pt-1.5 border-t border-amber-500/15 text-xs text-amber-100 cursor-pointer">
+              <input id="userJoinToggle" type="checkbox" checked class="rounded border-stone-600 bg-stone-900 text-amber-500 focus:ring-0" />
+              <span>🙋 用戶親自加入圓桌討論（推算後可發言、指定心水碼並讓 AI 回應）</span>
+            </label>
+          </div>
+
+          <div id="schoolsList" class="space-y-2"></div>
+
+          <div class="pt-2">
+            <button id="runRoundtableBtn" type="button" class="w-full py-3 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-red-800 via-amber-500 to-yellow-500 text-stone-950 shadow-lg shadow-amber-500/20 hover:brightness-105 active:scale-[0.99] transition flex items-center justify-center gap-2">
+              <span id="runBtnSpinner" class="hidden w-4 h-4 border-2 border-stone-950 border-t-transparent rounded-full animate-spin"></span>
+              <span id="runBtnLabel">🐉 召喚大師圓桌推算（缺資料亦可出字）</span>
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Right Column: Roundtable, Ticket Builder, Chart -->
+      <div class="lg:col-span-7 space-y-6">
+        <section class="mystic-card rounded-2xl p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-amber-500/20 pb-3">
+            <h2 class="text-base font-bold font-serif-tc text-amber-300 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-red-900/70 border border-amber-400/50 text-amber-200 text-xs flex items-center justify-center">3</span>
+              四大 AI 大師圓桌推演實錄
+            </h2>
+            <span id="roundtableStatus" class="text-xs px-2.5 py-1 rounded-full bg-stone-900 text-amber-200/80 border border-amber-500/25">靜候開壇</span>
+          </div>
+
+          <div id="roundtableContainer" class="space-y-3">
+            <div class="rounded-xl border border-dashed border-amber-500/25 bg-stone-950/60 p-6 text-center space-y-2">
+              <p class="text-sm text-amber-100">玄壇已備，靜候起局。</p>
+              <p class="text-xs text-stone-400">就算不填任何個人資料，只要勾選學派（或全選），按下「召喚大師圓桌推算」即會自動以隨機天時起局並出字。</p>
+            </div>
+          </div>
+
+          <div id="debateSummaryBox" class="hidden rounded-xl bg-gradient-to-br from-red-950/45 via-amber-950/35 to-stone-950 border border-amber-500/40 p-4 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold font-serif-tc text-amber-300">⚖️ 第二輪：AI 圓桌交鋒與總結共識</h3>
+              <span id="arbitratorBadge" class="text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-200">主裁判綜合</span>
+            </div>
+            <p id="debateText" class="text-xs sm:text-sm text-stone-200 leading-relaxed whitespace-pre-line"></p>
+          </div>
+
+          <!-- User Interactive Roundtable Participation -->
+          <div id="userDiscussionPanel" class="hidden rounded-xl bg-stone-950/90 border border-amber-400/35 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-amber-200">🙋 第三輪：用戶親自加入圓桌討論</h3>
+              <span class="text-[11px] text-stone-400">AI 會即時回應並調整推薦</span>
+            </div>
+            <div id="userThreadLog" class="space-y-2 max-h-56 overflow-y-auto"></div>
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+              <input id="userCommentInput" type="text" placeholder="發表你嘅睇法（例：我直覺 18 號好旺，或貼上書本段落...）" class="sm:col-span-8 bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none" />
+              <input id="userBoostNumsInput" type="text" placeholder="心水碼 (例: 8,18)" class="sm:col-span-4 bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none" />
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2 bg-stone-900/70 border border-stone-800 rounded-lg px-3 py-2">
+              <label for="userAttachmentInput" class="inline-flex items-center gap-1.5 text-xs text-amber-200 cursor-pointer hover:text-amber-100">
+                <span>📎 上載圖片 / PDF / 書本文字檔</span>
+                <span class="text-[10px] text-stone-400">(.png, .jpg, .pdf, .txt, .md)</span>
+                <input id="userAttachmentInput" type="file" multiple accept="image/*,.pdf,.txt,.md,.csv,.json" class="hidden" />
+              </label>
+              <button id="clearAttachmentsBtn" type="button" class="hidden text-[11px] text-rose-300 hover:underline">清除附件</button>
+            </div>
+            <div id="attachmentPreviewList" class="hidden flex flex-wrap gap-2"></div>
+            <button id="sendUserReplyBtn" type="button" class="w-full py-2 px-4 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/45 text-amber-200 transition">
+              💬 發言（連同附件）並請 AI 大師回應調整
+            </button>
+          </div>
+        </section>
+
+        <section class="mystic-card rounded-2xl p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-amber-500/20 pb-3">
+            <h2 class="text-base font-bold font-serif-tc text-amber-300 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-red-900/70 border border-amber-400/50 text-amber-200 text-xs flex items-center justify-center">4</span>
+              自選投注格式與最終出字
+            </h2>
+            <div id="betCostBadge" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+              1 注・HK$10
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 bg-stone-950 p-1 rounded-xl border border-amber-500/20">
+            <button type="button" data-bet-mode="single6" class="bet-mode-tab py-2 px-3 rounded-lg text-xs font-semibold transition bg-amber-500 text-stone-950">6 個號碼（單式）</button>
+            <button type="button" data-bet-mode="multi7" class="bet-mode-tab py-2 px-3 rounded-lg text-xs font-semibold transition text-stone-300 hover:text-white">7 個號碼（複式）</button>
+            <button type="button" data-bet-mode="banker" class="bet-mode-tab py-2 px-3 rounded-lg text-xs font-semibold transition text-stone-300 hover:text-white">膽拖模式（自選膽腳）</button>
+          </div>
+
+          <div id="bankerControls" class="hidden grid grid-cols-2 gap-3 bg-stone-950/75 p-3 rounded-xl border border-amber-500/20">
+            <div>
+              <label class="block text-xs text-stone-400 mb-1" for="bankerCountSelect">膽碼數量（點擊號碼球可換膽）</label>
+              <select id="bankerCountSelect" class="w-full bg-stone-900 border border-stone-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <option value="1">1 個膽碼</option>
+                <option value="2" selected>2 個膽碼</option>
+                <option value="3">3 個膽碼</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-stone-400 mb-1" for="legCountSelect">拖腳數量</label>
+              <select id="legCountSelect" class="w-full bg-stone-900 border border-stone-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <option value="5">5 個腳</option>
+                <option value="6" selected>6 個腳</option>
+                <option value="7">7 個腳</option>
+                <option value="8">8 個腳</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="finalTicketBox" class="rounded-xl bg-stone-950/85 border border-amber-500/25 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span id="ticketModeLabel" class="text-xs font-medium text-amber-200/80">最終推薦號碼</span>
+              <span class="text-[11px] text-stone-500">紅／藍／綠波按香港賽馬會官方色碼</span>
+            </div>
+            <div id="finalBallsContainer" class="flex flex-wrap items-center gap-2.5 min-h-[3rem]">
+              <span class="text-xs text-stone-500">請先執行第 3 步圓桌推算以生成心水號碼。</span>
+            </div>
+            <div id="bankerHint" class="hidden text-[11px] text-amber-300/90">
+              💡 提示：金框為「膽碼」，其餘為「拖腳」。點擊任一號碼球可切換為膽或腳。
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button id="copyTicketBtn" type="button" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-stone-900 hover:bg-stone-800 border border-stone-700 text-stone-200 transition">
+              📋 複製號碼
+            </button>
+            <button id="saveTicketBtn" type="button" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-300 transition">
+              ⭐ 儲存至心水紀錄
+            </button>
+            <button id="reshufflePoolBtn" type="button" class="ml-auto px-3.5 py-2 rounded-xl text-xs font-medium bg-stone-900 hover:bg-stone-800 border border-amber-500/25 text-amber-200 transition">
+              🎲 同池微調組合
+            </button>
+          </div>
+
+          <div id="savedTicketsSection" class="hidden pt-2 border-t border-amber-500/15 space-y-2">
+            <h3 class="text-xs font-semibold text-stone-400">已儲存心水注項</h3>
+            <div id="savedTicketsList" class="space-y-1.5 max-h-36 overflow-y-auto"></div>
+          </div>
+        </section>
+
+        <section class="mystic-card rounded-2xl p-5 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-sm font-bold text-amber-200">📈 歷史攪珠冷熱分佈（分析近 <span id="drawCountSpan">20</span> / <span id="totalArchiveSpan">100</span> 期）</h2>
+              <div class="inline-flex items-center gap-1 bg-stone-950 border border-amber-500/30 rounded-lg px-2 py-1 text-xs">
+                <label for="analysisDrawsInput" class="text-stone-400 text-[11px]">選用期數:</label>
+                <input id="analysisDrawsInput" type="number" min="1" max="100" value="20" placeholder="20" class="w-12 bg-stone-900 border border-stone-700 rounded px-1.5 py-0.5 text-xs text-amber-300 text-center focus:border-amber-400 focus:outline-none" />
+                <button type="button" class="draw-preset-btn px-1.5 py-0.5 rounded text-[10px] bg-stone-800 hover:bg-amber-500/20 text-stone-300" data-draws="20">20</button>
+                <button type="button" class="draw-preset-btn px-1.5 py-0.5 rounded text-[10px] bg-stone-800 hover:bg-amber-500/20 text-stone-300" data-draws="50">50</button>
+                <button type="button" class="draw-preset-btn px-1.5 py-0.5 rounded text-[10px] bg-stone-800 hover:bg-amber-500/20 text-stone-300" data-draws="100">100</button>
+              </div>
+            </div>
+            <div id="quickHotColdBadges" class="flex flex-wrap gap-1.5 text-[11px]"></div>
+          </div>
+          <div class="relative h-56 w-full">
+            <canvas id="freqChart"></canvas>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- API Modal -->
+  <div id="apiModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="mystic-card rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-amber-500/20 pb-3">
+        <h3 class="text-base font-bold font-serif-tc text-amber-300">🔑 設定四大 AI 模型 API Key</h3>
+        <button id="closeApiModalBtn" type="button" class="text-stone-400 hover:text-white text-lg leading-none">&times;</button>
+      </div>
+      <p class="text-xs text-stone-400 leading-relaxed">
+        Key 只保存在你的瀏覽器本地記憶體／localStorage，不會上傳至任何第三方伺服器。未設定時可直接用「模擬玄算」模式體驗完整功能。
+      </p>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-stone-300 font-medium mb-1" for="keyDeepseek">DeepSeek API Key</label>
+          <input id="keyDeepseek" type="password" placeholder="sk-..." class="w-full bg-stone-950 border border-stone-700 rounded-lg px-3 py-2 text-white focus:border-amber-400 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-stone-300 font-medium mb-1" for="keyOpenai">ChatGPT (OpenAI) API Key</label>
+          <input id="keyOpenai" type="password" placeholder="sk-..." class="w-full bg-stone-950 border border-stone-700 rounded-lg px-3 py-2 text-white focus:border-amber-400 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-stone-300 font-medium mb-1" for="keyGemini">Gemini (Google AI Studio) API Key</label>
+          <input id="keyGemini" type="password" placeholder="AIza..." class="w-full bg-stone-950 border border-stone-700 rounded-lg px-3 py-2 text-white focus:border-amber-400 focus:outline-none" />
+        </div>
+        <div class="p-3 rounded-xl bg-stone-950/90 border border-stone-800 space-y-2">
+          <label class="block text-stone-300 font-medium" for="keyClaude">Claude (Anthropic) API Key</label>
+          <input id="keyClaude" type="password" placeholder="sk-ant-..." class="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-white focus:border-amber-400 focus:outline-none" />
+          <label class="block text-stone-400 text-[11px]" for="claudeProxyUrl">自訂 HTTPS 代理端點（選填；瀏覽器直連 Anthropic 需支援 CORS 或透過雲端代理）</label>
+          <input id="claudeProxyUrl" type="url" placeholder="https://api.anthropic.com/v1/messages" class="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-1.5 text-white focus:border-amber-400 focus:outline-none" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2">
+        <label class="inline-flex items-center gap-2 text-xs text-stone-300 cursor-pointer">
+          <input id="persistKeysCheckbox" type="checkbox" checked class="rounded border-stone-600 bg-stone-900 text-amber-500 focus:ring-0" />
+          記住於此瀏覽器 (localStorage)
+        </label>
+        <div class="flex items-center gap-2">
+          <button id="clearApiKeysBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs text-rose-300 hover:bg-rose-500/10">清除全部</button>
+          <button id="saveApiKeysBtn" type="button" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-stone-950 hover:brightness-105">儲存設定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historical Data Modal -->
+  <div id="historyModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="mystic-card rounded-2xl max-w-2xl w-full p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-amber-500/20 pb-3">
+        <h3 class="text-base font-bold font-serif-tc text-amber-300">📊 歷史六合彩開獎資料庫（100 期：最新 10 期真實 ＋ 90 期統計補齊）</h3>
+        <button id="closeHistoryModalBtn" type="button" class="text-stone-400 hover:text-white text-lg leading-none">&times;</button>
+      </div>
+
+      <div class="overflow-y-auto max-h-60 border border-stone-800 rounded-xl">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-stone-900 text-stone-400 sticky top-0">
+            <tr>
+              <th class="px-3 py-2">期數</th>
+              <th class="px-3 py-2">日期</th>
+              <th class="px-3 py-2">攪出號碼 ＋ 特別號碼</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody" class="divide-y divide-stone-800/70"></tbody>
+        </table>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-xs font-medium text-stone-300" for="csvImportInput">
+          貼上額外期數（每行一期，格式：<code class="text-amber-300">期數,日期,n1,n2,n3,n4,n5,n6,特別號</code>）
+        </label>
+        <textarea id="csvImportInput" rows="3" placeholder="例如：&#10;26/124,2026-11-24,5,12,19,28,33,44,9" class="w-full bg-stone-950 border border-stone-700 rounded-xl p-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"></textarea>
+        <div class="flex items-center justify-between">
+          <button id="resetHistoryBtn" type="button" class="text-xs text-stone-400 hover:text-stone-200">重設為預設 10 期</button>
+          <button id="importHistoryBtn" type="button" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-stone-950 hover:brightness-105">匯入並更新統計</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const RED_NUMS = new Set([1,2,7,8,12,13,18,19,23,24,29,30,34,35,40,45,46]);
+    const BLUE_NUMS = new Set([3,4,9,10,14,15,20,25,26,31,36,37,41,42,47,48]);
+    const GREEN_NUMS = new Set([5,6,11,16,17,21,22,27,28,32,33,38,39,43,44,49]);
+
+    function getBallColorClass(n) {
+      if (RED_NUMS.has(n)) return 'ball-red';
+      if (BLUE_NUMS.has(n)) return 'ball-blue';
+      return 'ball-green';
+    }
+    function getBallColorName(n) {
+      if (RED_NUMS.has(n)) return '紅波';
+      if (BLUE_NUMS.has(n)) return '藍波';
+      return '綠波';
+    }
+
+    const REAL_RECENT_10 = [
+      { id: '26/123', date: '2026-11-19', nums: [12, 18, 32, 45, 47, 49], special: 41 },
+      { id: '26/122', date: '2026-11-17', nums: [4, 7, 18, 30, 42, 45], special: 36 },
+      { id: '26/121', date: '2026-11-15', nums: [2, 8, 11, 35, 43, 47], special: 48 },
+      { id: '26/120', date: '2026-11-12', nums: [20, 24, 33, 37, 42, 46], special: 13 },
+      { id: '26/119', date: '2026-11-10', nums: [3, 11, 13, 15, 17, 24], special: 19 },
+      { id: '26/118', date: '2026-11-07', nums: [11, 14, 17, 21, 22, 29], special: 40 },
+      { id: '26/117', date: '2026-11-05', nums: [11, 20, 28, 29, 42, 47], special: 46 },
+      { id: '26/116', date: '2026-10-31', nums: [10, 11, 19, 27, 37, 43], special: 8 },
+      { id: '26/115', date: '2026-10-27', nums: [2, 4, 18, 21, 24, 47], special: 31 },
+      { id: '26/114', date: '2026-10-24', nums: [9, 25, 26, 28, 44, 45], special: 20 }
+    ];
+    function build100Draws() {
+      const list = [...REAL_RECENT_10];
+      let seed = 20261024;
+      const baseDate = new Date('2026-10-22T00:00:00');
+      for (let i = 113; i >= 24; i--) {
+        const picked = new Set();
+        while (picked.size < 7) {
+          seed = (seed * 1664525 + 1013904223) >>> 0;
+          picked.add((seed % 49) + 1);
+        }
+        const arr = Array.from(picked);
+        const special = arr.pop();
+        arr.sort((a, b) => a - b);
+        const dStr = baseDate.toISOString().slice(0, 10);
+        baseDate.setDate(baseDate.getDate() - 2 - (i % 2));
+        list.push({ id: `26/${String(i).padStart(3, '0')}`, date: dStr, nums: arr, special });
+      }
+      return list;
+    }
+    const DEFAULT_DRAWS = build100Draws();
+
+    const SCHOOLS = [
+      { id: 'tieban', name: '鐵板神算大師', badge: '考刻條文', desc: '以生辰刻數或隨機數理推算皇極條文與靈碼', defaultAi: 'deepseek', checked: true },
+      { id: 'zhouyi', name: '周易六十四卦大師', badge: '卦辭爻變', desc: '按周易六十四卦爻變與彖辭推演進退吉數', defaultAi: 'claude', checked: true },
+      { id: 'iching', name: '梅花易數大師', badge: '時空動爻', desc: '以買入時空與心水數起本卦、互卦、變卦', defaultAi: 'gemini', checked: true },
+      { id: 'ziwei', name: '紫微八字大師', badge: '命宮財帛', desc: '推算生辰五行喜用神與流日財帛宮吉數', defaultAi: 'claude', checked: true },
+      { id: 'fengshui', name: '九宮飛星風水師', badge: '投注方位', desc: '結合投注站／網上地址方位與買入時辰推旺氣', defaultAi: 'gemini', checked: true },
+      { id: 'astrology', name: '西洋占星師', badge: '星盤相位', desc: '按出生地與木星／金星吉相計算幸運數', defaultAi: 'chatgpt', checked: false },
+      { id: 'stats', name: '歷史數據精算師', badge: '冷熱波色', desc: '統計近多期攪珠頻率、遺漏值與奇偶平衡', defaultAi: 'chatgpt', checked: true }
+    ];
+
+    const AI_LABELS = {
+      deepseek: { name: 'DeepSeek', color: 'bg-sky-500/20 text-sky-300 border-sky-500/30' },
+      claude: { name: 'Claude', color: 'bg-orange-500/20 text-orange-300 border-orange-500/30' },
+      chatgpt: { name: 'ChatGPT', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
+      gemini: { name: 'Gemini', color: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' }
+    };
+
+    const FORTUNE_LOTS = [
+      { num: '第八籤', rank: '上上籤', rankClass: 'bg-amber-500/25 text-amber-200 border border-amber-400/50', poem: '茂林松柏正興旺，雨雪風霜總莫傷；\n異日忽然成大用，功名成就壓群芳。', explain: '此籤大吉，主根基穩固、貴人暗助。問財運宜守正出奇，切忌猶豫；六合靈碼宜取大尾數配合中段連號。' },
+      { num: '第十六籤', rank: '上吉籤', rankClass: 'bg-emerald-500/25 text-emerald-200 border border-emerald-400/50', poem: '雲開見月正分明，不須進退問前程；\n婚姻皆由天註定，和合清吉萬事成。', explain: '撥開雲霧見青天之象，所問之事漸趨明朗。偏財方面宜信直覺第一念，忌臨場亂改號碼。' },
+      { num: '第廿八籤', rank: '中吉籤', rankClass: 'bg-sky-500/25 text-sky-200 border border-sky-400/50', poem: '東邊月上正團圓，君爾何須問神仙；\n只要心中存善念，自然福祿壽綿延。', explain: '心誠則靈，順其自然反有驚喜。問財宜小注怡情，可多留意東方（震／巽位）或綠波號碼。' },
+      { num: '第四十二籤', rank: '上上籤', rankClass: 'bg-amber-500/25 text-amber-200 border border-amber-400/50', poem: '君爾寬心且自由，門庭清吉家無憂；\n財寶自然終吉利，凡事無傷不用求。', explain: '財祿自然聚攏之吉兆，不必強求偏門。選號宜採用「雙膽拖腳」或紅藍平衡陣型。' },
+      { num: '第五十五籤', rank: '中平籤', rankClass: 'bg-stone-700/70 text-stone-200 border border-stone-500/50', poem: '須知進退總虛言，看看發暗未必全；\n珠玉深藏還未現，等待時來福自連。', explain: '時機尚在醞釀，宜靜觀其變、穩健部署。選號不妨納入 1 至 2 個近期遺漏冷門號碼作伏筆。' },
+      { num: '第六十九籤', rank: '上吉籤', rankClass: 'bg-emerald-500/25 text-emerald-200 border border-emerald-400/50', poem: '冬來嶺上一枝梅，葉落枝枯終不摧；\n但得陽春悄然至，依然更換好花開。', explain: '否極泰來、枯木逢春之象。若近期手風欠順，此籤預示轉機將至，宜以單數為主軸。' }
+    ];
+
+    const ZHOUYI_HEXAGRAMS = [
+      { name: '乾為天', buci: '元亨，利貞。潛龍勿用，見龍在田，飛龍在天。', tag: '大吉・剛健進取', advice: '氣勢如虹，所問之事大方向正確，宜果斷推進。財運利首尾呼應之大碼。' },
+      { name: '水火既濟', buci: '亨，小利貞；初吉終亂。', tag: '吉・水火相融', advice: '事已成局、陰陽調和之象，問事可得圓滿結果，但見好即收、切忌貪多。' },
+      { name: '火天大有', buci: '元亨。火在天上，君子以遏惡揚善，順天休命。', tag: '大吉・豐盛聚財', advice: '「大有」主大豐收與財富匯聚，所問偏財與合作極具潛力，宜配紅波旺數。' },
+      { name: '雷風恆', buci: '亨，無咎，利貞，利有攸往。', tag: '中吉・恆久穩定', advice: '宜持之以恆，守住原有心水或長期策略，不宜臨時大幅更動方向。' },
+      { name: '地天泰', buci: '小往大來，吉亨。天地交而萬物通也。', tag: '上吉・通達順遂', advice: '小投入可望大回報，人脈與運氣皆通暢，問事吉利，選號宜大小均衡。' },
+      { name: '澤山咸', buci: '亨，利貞。天地感而萬物化生。', tag: '吉・心靈感應', advice: '重直覺與感應之卦，第一眼看中的數字或靈感往往最準確。' },
+      { name: '風火家人', buci: '利女貞。風自火出，君子以言有物而行有恆。', tag: '平吉・安穩守成', advice: '宜在熟悉環境或家中安心部署（如網上投注），按部就班即可。' },
+      { name: '水雷屯', buci: '元亨利貞，勿用有攸往，利建侯。', tag: '蓄勢・先難後易', advice: '萬事起頭難，暫時宜多觀察比較，小試牛刀為佳，靜待時機成熟。' }
+    ];
+
+    const state = {
+      mode: 'sim',
+      draws: [...DEFAULT_DRAWS],
+      schools: SCHOOLS.map(s => ({ ...s, ai: s.defaultAi })),
+      apiKeys: { deepseek: '', openai: '', gemini: '', claude: '', claudeProxy: 'https://api.anthropic.com/v1/messages' },
+      betMode: 'single6',
+      bankerCount: 2,
+      legCount: 6,
+      rankedPool: [],
+      selectedBankers: [],
+      selectedLegs: [],
+      savedTickets: [],
+      chartInstance: null,
+      oracleBonusNums: [],
+      lotBonusNums: [],
+      isCastingOracle: false,
+      isShakingLot: false,
+      invitedAis: ['deepseek', 'claude', 'chatgpt', 'gemini'],
+      userJoin: true,
+      lastResults: [],
+      activeDrawCount: 20,
+      userAttachments: []
+    };
+
+    function loadSavedKeys() {
+      try {
+        const raw = localStorage.getItem('marksix_oracle_keys_v1');
+        if (raw) state.apiKeys = { ...state.apiKeys, ...JSON.parse(raw) };
+      } catch (e) {}
+      syncKeyInputs();
+    }
+    function persistKeys(saveToStorage) {
+      try {
+        if (saveToStorage) localStorage.setItem('marksix_oracle_keys_v1', JSON.stringify(state.apiKeys));
+        else localStorage.removeItem('marksix_oracle_keys_v1');
+      } catch (e) {}
+      updateApiBadge();
+    }
+    function syncKeyInputs() {
+      document.getElementById('keyDeepseek').value = state.apiKeys.deepseek || '';
+      document.getElementById('keyOpenai').value = state.apiKeys.openai || '';
+      document.getElementById('keyGemini').value = state.apiKeys.gemini || '';
+      document.getElementById('keyClaude').value = state.apiKeys.claude || '';
+      document.getElementById('claudeProxyUrl').value = state.apiKeys.claudeProxy || 'https://api.anthropic.com/v1/messages';
+      updateApiBadge();
+    }
+    function updateApiBadge() {
+      const count = ['deepseek', 'openai', 'gemini', 'claude'].filter(k => (state.apiKeys[k] || '').trim().length > 4).length;
+      document.getElementById('apiCountBadge').textContent = `${count}/4`;
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      const colors = type === 'error'
+        ? 'bg-rose-950/95 border-rose-500/50 text-rose-200'
+        : type === 'success'
+        ? 'bg-emerald-950/95 border-emerald-500/50 text-emerald-200'
+        : 'bg-stone-900/95 border-amber-500/45 text-amber-100';
+      el.className = `pointer-events-auto px-3.5 py-2.5 rounded-xl border text-xs shadow-xl transition-all duration-300 ${colors}`;
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }, 3200);
+    }
+
+    function renderSchools() {
+      const list = document.getElementById('schoolsList');
+      list.innerHTML = '';
+      state.schools.forEach((s) => {
+        const row = document.createElement('div');
+        row.className = `rounded-xl border p-2.5 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
+          s.checked ? 'bg-stone-900/90 border-amber-500/40' : 'bg-stone-950/50 border-stone-800/80 opacity-70'
+        }`;
+
+        const left = document.createElement('label');
+        left.className = 'flex items-start gap-2.5 cursor-pointer flex-1';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = s.checked;
+        cb.className = 'mt-0.5 rounded border-stone-600 bg-stone-900 text-amber-500 focus:ring-0';
+        cb.addEventListener('change', () => {
+          s.checked = cb.checked;
+          renderSchools();
+        });
+
+        const info = document.createElement('div');
+        info.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-xs sm:text-sm font-semibold text-amber-50">${s.name}</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-red-950/70 text-amber-300 border border-amber-500/25">${s.badge}</span>
+          </div>
+          <p class="text-[11px] text-stone-400 mt-0.5">${s.desc}</p>
+        `;
+        left.appendChild(cb);
+        left.appendChild(info);
+
+        const select = document.createElement('select');
+        select.className = 'bg-stone-950 border border-stone-700 rounded-lg px-2 py-1.5 text-xs text-amber-200 focus:border-amber-400 focus:outline-none shrink-0';
+        const poolAis = state.invitedAis.length > 0 ? state.invitedAis : ['deepseek', 'claude', 'chatgpt', 'gemini'];
+        if (!poolAis.includes(s.ai)) s.ai = poolAis[0];
+        poolAis.forEach(aiKey => {
+          const opt = document.createElement('option');
+          opt.value = aiKey;
+          opt.textContent = AI_LABELS[aiKey].name;
+          if (s.ai === aiKey) opt.selected = true;
+          select.appendChild(opt);
+        });
+        select.addEventListener('change', () => {
+          s.ai = select.value;
+        });
+
+        row.appendChild(left);
+        row.appendChild(select);
+        list.appendChild(row);
+      });
+    }
+
+    function getEffectiveDrawCount() {
+      const raw = Number(document.getElementById('analysisDrawsInput')?.value);
+      if (!raw || raw < 1) return 20;
+      return Math.min(raw, state.draws.length);
+    }
+    function computeHistoryStats() {
+      const count = getEffectiveDrawCount();
+      const sliced = state.draws.slice(0, count);
+      const freq = Array(50).fill(0);
+      let odd = 0, even = 0;
+      sliced.forEach(d => {
+        [...d.nums, d.special].forEach(n => {
+          if (n >= 1 && n <= 49) {
+            freq[n]++;
+            if (n % 2 === 1) odd++; else even++;
+          }
+        });
+      });
+      const pairs = [];
+      for (let i = 1; i <= 49; i++) pairs.push({ num: i, count: freq[i] });
+      const hot = [...pairs].sort((a, b) => b.count - a.count || a.num - b.num).slice(0, 6);
+      const cold = [...pairs].sort((a, b) => a.count - b.count || a.num - b.num).slice(0, 6);
+      return { freq, hot, cold, odd, even, totalDraws: sliced.length };
+    }
+
+    function renderStatsAndChart() {
+      const stats = computeHistoryStats();
+      document.getElementById('drawCountSpan').textContent = stats.totalDraws;
+      document.getElementById('totalArchiveSpan').textContent = state.draws.length;
+      document.getElementById('quickHotColdBadges').innerHTML = `
+        <span class="px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30">旺號：${stats.hot.slice(0,4).map(x=>x.num).join(', ')}</span>
+        <span class="px-2 py-0.5 rounded bg-sky-500/15 text-sky-300 border border-sky-500/30">冷門：${stats.cold.slice(0,4).map(x=>x.num).join(', ')}</span>
+      `;
+
+      const ctx = document.getElementById('freqChart').getContext('2d');
+      const labels = Array.from({ length: 49 }, (_, i) => i + 1);
+      const data = labels.map(n => stats.freq[n]);
+      const bgColors = labels.map(n => RED_NUMS.has(n) ? 'rgba(239,68,68,0.8)' : BLUE_NUMS.has(n) ? 'rgba(59,130,246,0.8)' : 'rgba(34,197,94,0.8)');
+
+      if (state.chartInstance) state.chartInstance.destroy();
+      state.chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets: [{ label: '出現次數', data, backgroundColor: bgColors, borderRadius: 3 }] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { title: (items) => `號碼 ${items[0].label}（${getBallColorName(Number(items[0].label))}）` } }
+          },
+          scales: {
+            x: { ticks: { color: '#a8a29e', font: { size: 9 } }, grid: { display: false } },
+            y: { beginAtZero: true, ticks: { stepSize: 1, color: '#a8a29e', font: { size: 10 } }, grid: { color: 'rgba(212,175,55,0.08)' } }
+          }
+        }
+      });
+
+      document.getElementById('historyTableBody').innerHTML = state.draws.map(d => `
+        <tr class="hover:bg-stone-900/60">
+          <td class="px-3 py-2 font-medium text-amber-300">${d.id}</td>
+          <td class="px-3 py-2 text-stone-400">${d.date}</td>
+          <td class="px-3 py-2">
+            <div class="flex flex-wrap items-center gap-1">
+              ${d.nums.map(n => `<span class="m6-ball m6-ball-sm ${getBallColorClass(n)}">${n}</span>`).join('')}
+              <span class="text-stone-500 mx-0.5">+</span>
+              <span class="m6-ball m6-ball-sm ${getBallColorClass(d.special)} ring-1 ring-amber-400">${d.special}</span>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Flexible Context Getter: NEVER fails on missing data, fills random cosmic seed when empty
+    function getUserContext() {
+      const yRaw = document.getElementById('birthYear').value.trim();
+      const mRaw = document.getElementById('birthMonth').value.trim();
+      const dRaw = document.getElementById('birthDay').value.trim();
+      const tRaw = document.getElementById('birthTime').value.trim();
+      const gRaw = document.getElementById('gender').value;
+      const pRaw = document.getElementById('birthPlace').value.trim();
+      const dtRaw = document.getElementById('purchaseDateTime').value.trim();
+      const seedRaw = document.getElementById('ichingSeed').value.trim();
+
+      const hasAnyBirth = Boolean(yRaw || mRaw || dRaw || tRaw);
+      const y = yRaw ? Number(yRaw) : (1970 + Math.floor(Math.random() * 35));
+      const m = mRaw ? Number(mRaw) : (1 + Math.floor(Math.random() * 12));
+      const d = dRaw ? Number(dRaw) : (1 + Math.floor(Math.random() * 28));
+      const t = tRaw || `${String(Math.floor(Math.random() * 24)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`;
+      const gender = gRaw === 'male' ? '男（乾造）' : gRaw === 'female' ? '女（坤造）' : (Math.random() > 0.5 ? '男（隨機乾造）' : '女（隨機坤造）');
+      const birthPlace = pRaw || '香港（預設感應）';
+
+      const branchSelect = document.getElementById('bettingBranch').value;
+      let branchName = '', branchAddr = '', branchBagua = '';
+      if (branchSelect === 'random') {
+        const dirs = ['正東・震卦(木)', '東南・巽卦(木)', '正南・離卦(火)', '正西・兌卦(金)', '正北・坎卦(水)'];
+        branchName = '隨機天時感應方位';
+        branchAddr = '無指定投注站';
+        branchBagua = dirs[Math.floor(Math.random() * dirs.length)];
+      } else if (branchSelect === 'online') {
+        const customAddr = document.getElementById('customBranchInput').value.trim();
+        branchName = customAddr ? `網上／自訂（${customAddr}）` : '網上投注（香港隨機方位）';
+        branchAddr = customAddr || '線上空間';
+        branchBagua = '按所在地址及買入時辰起局';
+      } else {
+        const parts = branchSelect.split('|');
+        branchName = parts[0]; branchAddr = parts[1]; branchBagua = parts[2];
+      }
+
+      const purchaseDT = dtRaw || new Date().toISOString().slice(0, 16);
+      const seedNum = seedRaw ? Number(seedRaw) : (1 + Math.floor(Math.random() * 999));
+      const randomSalt = hasAnyBirth ? '' : `-${Math.floor(Math.random() * 100000)}`;
+
+      return { y, m, d, t, gender, birthPlace, branchName, branchAddr, branchBagua, purchaseDT, seedNum, isRandomized: !hasAnyBirth, randomSalt };
+    }
+
+    function hashString(str) {
+      let h = 2166136261;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    }
+    function pickUniqueNumbers(seedStr, count, biasList = []) {
+      let s = hashString(seedStr);
+      const picked = new Set();
+      for (const b of biasList) {
+        if (picked.size < Math.min(2, count) && b >= 1 && b <= 49) {
+          if ((s % 3) !== 0) picked.add(b);
+          s = (s * 1664525 + 1013904223) >>> 0;
+        }
+      }
+      while (picked.size < count) {
+        s = (s * 1664525 + 1013904223) >>> 0;
+        const n = (s % 49) + 1;
+        picked.add(n);
+      }
+      return Array.from(picked).sort((a, b) => a - b);
+    }
+
+    // Animated Weekly Zhouyi Hexagram Casting
+    async function castAnimatedOracle() {
+      if (state.isCastingOracle) return;
+      state.isCastingOracle = true;
+      const btn = document.getElementById('castOracleBtn');
+      btn.disabled = true;
+
+      const question = document.getElementById('oracleQuestionInput').value.trim() || '近期整體運勢與六合彩靈感';
+      const linesBox = document.getElementById('hexagramLinesBox');
+      const progress = document.getElementById('coinCastProgress');
+      const coins = [document.getElementById('coin1'), document.getElementById('coin2'), document.getElementById('coin3')];
+      linesBox.innerHTML = '';
+
+      const yaos = [];
+      for (let i = 1; i <= 6; i++) {
+        progress.textContent = `正在擲第 ${i} 爻銅錢...`;
+        coins.forEach(c => { c.classList.remove('animate-coin-flip'); void c.offsetWidth; c.classList.add('animate-coin-flip'); });
+        await new Promise(r => setTimeout(r, 420));
+
+        // 0=tails(2), 1=heads(3) -> sum 6(老陰變), 7(少陽), 8(少陰), 9(老陽變)
+        const sum = (Math.random() > 0.5 ? 3 : 2) + (Math.random() > 0.5 ? 3 : 2) + (Math.random() > 0.5 ? 3 : 2);
+        yaos.push(sum);
+        const isYang = sum === 7 || sum === 9;
+        const isChanging = sum === 6 || sum === 9;
+
+        const lineEl = document.createElement('div');
+        lineEl.className = 'w-full flex items-center justify-between gap-1 animate-ball-pop';
+        if (isYang) {
+          lineEl.innerHTML = `<div class="h-2.5 flex-1 rounded bg-gradient-to-r from-amber-400 to-amber-300 shadow"></div>${isChanging ? '<span class="text-[9px] text-rose-400 font-bold">◯</span>' : ''}`;
+        } else {
+          lineEl.innerHTML = `<div class="h-2.5 flex-1 flex gap-2"><div class="flex-1 rounded bg-stone-400"></div><div class="flex-1 rounded bg-stone-400"></div></div>${isChanging ? '<span class="text-[9px] text-rose-400 font-bold">✕</span>' : ''}`;
+        }
+        linesBox.appendChild(lineEl);
+      }
+
+      progress.textContent = '六爻已成・卦象顯靈';
+      const hexIdx = yaos.reduce((acc, v, idx) => acc + ((v === 7 || v === 9) ? (1 << idx) : 0), 0) % ZHOUYI_HEXAGRAMS.length;
+      const hex = ZHOUYI_HEXAGRAMS[hexIdx];
+
+      document.getElementById('oracleHexTitle').textContent = `【${hex.name}】卦`;
+      const tag = document.getElementById('oracleHexTag');
+      tag.textContent = hex.tag;
+      tag.classList.remove('hidden');
+      document.getElementById('oracleBuciText').textContent = `卜辭曰：「${hex.buci}」`;
+      document.getElementById('oracleAnswerText').textContent = `針對所問「${question}」：${hex.advice}`;
+
+      const bonus = pickUniqueNumbers(`oracle-${question}-${yaos.join('-')}-${Date.now()}`, 3);
+      state.oracleBonusNums = bonus;
+      document.getElementById('oracleLuckyBalls').innerHTML = bonus.map(n => `<span class="m6-ball m6-ball-sm animate-ball-pop ${getBallColorClass(n)}">${n}</span>`).join('');
+      document.getElementById('oracleLuckyRow').classList.remove('hidden');
+
+      state.isCastingOracle = false;
+      btn.disabled = false;
+      showToast(`已起出【${hex.name}】卦！`, 'success');
+    }
+
+    // Animated Kau Cim Lot Shaking
+    async function shakeFortuneLot() {
+      if (state.isShakingLot) return;
+      state.isShakingLot = true;
+      const btn = document.getElementById('shakeLotBtn');
+      const tube = document.getElementById('bambooTube');
+      const stick = document.getElementById('fortuneStickVisual');
+      btn.disabled = true;
+      stick.classList.add('hidden');
+      stick.classList.remove('animate-stick-pop');
+      tube.classList.add('animate-tube-shake');
+
+      await new Promise(r => setTimeout(r, 1100));
+      tube.classList.remove('animate-tube-shake');
+      stick.classList.remove('hidden');
+      stick.classList.add('animate-stick-pop');
+
+      const lot = FORTUNE_LOTS[Math.floor(Math.random() * FORTUNE_LOTS.length)];
+      const q = document.getElementById('lotQuestionInput').value.trim();
+
+      document.getElementById('lotTitle').textContent = `${lot.num}${q ? `（問：${q}）` : ''}`;
+      const badge = document.getElementById('lotRankBadge');
+      badge.textContent = lot.rank;
+      badge.className = `text-xs px-2.5 py-0.5 rounded-full font-bold ${lot.rankClass}`;
+      badge.classList.remove('hidden');
+
+      document.getElementById('lotPoem').textContent = lot.poem;
+      document.getElementById('lotExplain').textContent = lot.explain;
+
+      const bonus = pickUniqueNumbers(`lot-${lot.num}-${q}-${Date.now()}`, 3);
+      state.lotBonusNums = bonus;
+      document.getElementById('lotLuckyBalls').innerHTML = bonus.map(n => `<span class="m6-ball m6-ball-sm animate-ball-pop ${getBallColorClass(n)}">${n}</span>`).join('');
+      document.getElementById('lotLuckyRow').classList.remove('hidden');
+
+      state.isShakingLot = false;
+      btn.disabled = false;
+      showToast(`求得 ${lot.num}（${lot.rank}）！`, 'success');
+    }
+
+    function generateSimulatedMaster(school, ctx, stats) {
+      const elements = ['金', '木', '水', '火', '土'];
+      const stems = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+      const branches = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+      const baguaNames = ['乾為天','兌為澤','離為火','震為雷','巽為風','坎為水','艮為山','坤為地'];
+
+      const birthSum = ctx.y + ctx.m + ctx.d + Number(ctx.t.split(':')[0] || 0);
+      const pDate = new Date(ctx.purchaseDT);
+      const pHour = isNaN(pDate.getTime()) ? 17 : pDate.getHours();
+      const pDay = isNaN(pDate.getTime()) ? 24 : pDate.getDate();
+
+      const stem = stems[(ctx.y - 4) % 10];
+      const zhi = branches[(ctx.y - 4) % 12];
+      const favElem = elements[(birthSum + (ctx.gender.includes('男') ? 1 : 2)) % 5];
+
+      const hotNums = stats.hot.map(x => x.num);
+      const coldNums = stats.cold.map(x => x.num);
+      const salt = ctx.randomSalt;
+      const modeTag = ctx.isRandomized ? '（隨機天時起局）' : '';
+
+      let reasoning = '';
+      let picks = [];
+
+      if (school.id === 'tieban') {
+        const keNum = ((birthSum * 17 + ctx.seedNum) % 8999) + 1000;
+        const fourChars = ['財星拱照', '紫氣東來', '金玉滿堂', '吉星高照', '和合生財'][keNum % 5];
+        picks = pickUniqueNumbers(`tieban-${keNum}-${ctx.purchaseDT}${salt}`, 6, [(keNum % 49) + 1, ((keNum >> 2) % 49) + 1]);
+        reasoning = `按鐵板神算考刻數理推得第 ${keNum} 條皇極批文「${fourChars}」${modeTag}。條文密碼折合基數 ${(keNum % 49) + 1}，宜配尾數 ${(keNum % 9) + 1} 之紅綠波號碼成局。`;
+      } else if (school.id === 'zhouyi') {
+        const hex = ZHOUYI_HEXAGRAMS[(ctx.seedNum + pHour + birthSum) % ZHOUYI_HEXAGRAMS.length];
+        picks = pickUniqueNumbers(`zhouyi-${hex.name}-${ctx.seedNum}${salt}`, 6, [...state.oracleBonusNums, hotNums[0]]);
+        reasoning = `依周易六十四卦起得「${hex.name}」${modeTag}，卦辭云：「${hex.buci}」動爻應數落於中上盤，建議鎖定卦氣相應數字並配搭單雙均衡。`;
+      } else if (school.id === 'iching') {
+        const upperIdx = ((ctx.seedNum + pDay + pHour) % 8);
+        const lowerIdx = ((ctx.m + ctx.d + pHour) % 8);
+        const movingLine = ((ctx.seedNum + birthSum) % 6) + 1;
+        picks = pickUniqueNumbers(`iching-${ctx.seedNum}-${ctx.purchaseDT}-${ctx.y}${salt}`, 6, [upperIdx + 1, lowerIdx + 10, movingLine * 7]);
+        reasoning = `以買入時空（${ctx.purchaseDT.replace('T',' ')}）配合數理 ${ctx.seedNum} 起梅花易數，得「${baguaNames[upperIdx]}」疊「${baguaNames[lowerIdx]}」，動爻在第 ${movingLine} 爻，宜取尾數 ${movingLine} 及相應卦數為膽腳。`;
+      } else if (school.id === 'ziwei') {
+        const starPool = ['紫微天府','武曲貪狼','天機太陰','太陽巨門','天同天梁'];
+        const mainStar = starPool[birthSum % starPool.length];
+        picks = pickUniqueNumbers(`ziwei-${ctx.y}-${ctx.m}-${ctx.d}-${ctx.t}-${ctx.gender}${salt}`, 6, [hotNums[0], ((ctx.m * 3 + ctx.d) % 49) + 1]);
+        reasoning = `${ctx.isRandomized ? '未填生辰，以隨機天運起盤：' : ''}推得 ${stem}${zhi} 氣運（${ctx.gender}），命宮主星「${mainStar}」，喜用神屬「${favElem}」。流日財帛宮逢祿存會照，利${favElem}行旺數催旺偏財。`;
+      } else if (school.id === 'fengshui') {
+        const stars = ['一白貪狼','六白武曲','八白左輔','九紫右弼'];
+        const star = stars[(pHour + ctx.branchName.length) % stars.length];
+        picks = pickUniqueNumbers(`fs-${ctx.branchName}-${ctx.purchaseDT}${salt}`, 6, [((pHour + 1) % 49) + 1, ...state.lotBonusNums]);
+        reasoning = `鎖定方位「${ctx.branchName}」（${ctx.branchBagua}），配合買入時刻（${pHour} 時）九宮飛星值「${star}」入財位。當旺方位氣場利大尾數與${favElem}氣相生之碼。`;
+      } else if (school.id === 'astrology') {
+        picks = pickUniqueNumbers(`astro-${ctx.birthPlace}-${ctx.y}-${ctx.m}-${ctx.d}${salt}`, 6, [((ctx.d + 12) % 49) + 1, coldNums[0]]);
+        reasoning = `以「${ctx.birthPlace}」及星盤推算流日行星相位，木星與金星呈三分吉相，主意外之財與數字靈感，建議加入 1 至 2 個近期遺漏冷號作突破。`;
+      } else {
+        picks = pickUniqueNumbers(`stats-${stats.totalDraws}-${hotNums.join(',')}${salt}`, 6, [hotNums[0], hotNums[1], coldNums[0]]);
+        reasoning = `分析近 ${stats.totalDraws} 期歷史開獎：旺號為 ${hotNums.slice(0,4).join('、')}，極冷遺漏號為 ${coldNums.slice(0,3).join('、')}，總奇偶比 ${stats.odd}:${stats.even}。宜採「3 熱 + 2 溫 + 1 冷」均衡陣型。`;
+      }
+
+      return { school, ai: school.ai, reasoning, picks, isLive: false };
+    }
+
+    async function callLiveAI(aiModel, prompt) {
+      if (aiModel === 'deepseek') {
+        const key = state.apiKeys.deepseek.trim();
+        if (!key) throw new Error('未填寫 DeepSeek API Key');
+        const res = await fetch('https://api.deepseek.com/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+          body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }], temperature: 0.7 })
+        });
+        if (!res.ok) throw new Error(`DeepSeek HTTP ${res.status}`);
+        const data = await res.json();
+        return data.choices[0].message.content;
+      }
+      if (aiModel === 'chatgpt') {
+        const key = state.apiKeys.openai.trim();
+        if (!key) throw new Error('未填寫 OpenAI API Key');
+        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], temperature: 0.7 })
+        });
+        if (!res.ok) throw new Error(`OpenAI HTTP ${res.status}`);
+        const data = await res.json();
+        return data.choices[0].message.content;
+      }
+      if (aiModel === 'gemini') {
+        const key = state.apiKeys.gemini.trim();
+        if (!key) throw new Error('未填寫 Gemini API Key');
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`);
+        const data = await res.json();
+        return data.candidates[0].content.parts[0].text;
+      }
+      if (aiModel === 'claude') {
+        const key = state.apiKeys.claude.trim();
+        const endpoint = (state.apiKeys.claudeProxy || 'https://api.anthropic.com/v1/messages').trim();
+        if (!key) throw new Error('未填寫 Claude API Key');
+        if (!endpoint.startsWith('https://')) throw new Error('Claude 端點必須為 https://');
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': key,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
+          body: JSON.stringify({ model: 'claude-3-5-sonnet-latest', max_tokens: 450, messages: [{ role: 'user', content: prompt }] })
+        });
+        if (!res.ok) throw new Error(`Claude HTTP ${res.status}`);
+        const data = await res.json();
+        return data.content[0].text;
+      }
+      throw new Error('未知 AI 模型');
+    }
+
+    function parseNumbersFromAI(text, fallbackSeed) {
+      const jsonMatch = text.match(/\[[\s\d,]+\]/);
+      const found = new Set();
+      if (jsonMatch) {
+        try {
+          JSON.parse(jsonMatch[0]).forEach(n => { const num = Number(n); if (num >= 1 && num <= 49) found.add(num); });
+        } catch (e) {}
+      }
+      if (found.size < 6) {
+        (text.match(/\b([1-9]|[1-4][0-9])\b/g) || []).forEach(s => { const n = Number(s); if (n >= 1 && n <= 49 && found.size < 6) found.add(n); });
+      }
+      if (found.size < 6) {
+        pickUniqueNumbers(fallbackSeed, 6).forEach(n => { if (found.size < 6) found.add(n); });
+      }
+      return Array.from(found).slice(0, 6).sort((a, b) => a - b);
+    }
+
+    async function runRoundtable() {
+      if (state.invitedAis.length === 0) {
+        showToast('請至少勾選 1 個加入圓桌的 AI 模型！', 'error');
+        return;
+      }
+      const activeSchools = state.schools.filter(s => s.checked);
+      if (activeSchools.length === 0) {
+        showToast('請至少勾選 1 個推算學派！', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('runRoundtableBtn');
+      const spinner = document.getElementById('runBtnSpinner');
+      const label = document.getElementById('runBtnLabel');
+      const statusBadge = document.getElementById('roundtableStatus');
+
+      btn.disabled = true;
+      spinner.classList.remove('hidden');
+      label.textContent = '玄壇起局・大師圓桌推算中...';
+      statusBadge.textContent = state.mode === 'live' ? '真實 AI 連線推演中' : '模擬玄算推演中';
+
+      const ctx = getUserContext();
+      const stats = computeHistoryStats();
+      const container = document.getElementById('roundtableContainer');
+      container.innerHTML = '';
+
+      const results = [];
+      for (const school of activeSchools) {
+        let resObj;
+        if (state.mode === 'live') {
+          const prompt = `你現在扮演「${school.name}」（專長：${school.desc}）。請根據以下香港六合彩求測者資料用繁體中文作簡短精準分析（80-120字），並在最後一行用 JSON 陣列格式提供 6 個 1 至 49 不重複的推薦號碼，例如 [3, 11, 18, 29, 36, 45]。
+資料：${ctx.isRandomized ? '求測者未提供生辰，請按天時隨機起局' : `出生 ${ctx.y}年${ctx.m}月${ctx.d}日 ${ctx.t}`}，性別 ${ctx.gender}，出生地 ${ctx.birthPlace}，投注方位「${ctx.branchName}（${ctx.branchBagua}）」，買入時間 ${ctx.purchaseDT}，起卦數 ${ctx.seedNum}。近期熱號：${stats.hot.map(x=>x.num).join(',')}；冷號：${stats.cold.map(x=>x.num).join(',')}。`;
+          try {
+            const rawText = await callLiveAI(school.ai, prompt);
+            const picks = parseNumbersFromAI(rawText, `${school.id}-${ctx.purchaseDT}${ctx.randomSalt}`);
+            resObj = { school, ai: school.ai, reasoning: rawText.replace(/\[[\s\d,]+\]/g, '').trim(), picks, isLive: true };
+          } catch (err) {
+            const sim = generateSimulatedMaster(school, ctx, stats);
+            sim.reasoning = `⚠️ ${AI_LABELS[school.ai].name} API 呼叫失敗（${err.message}），已自動切換本地玄算：\n` + sim.reasoning;
+            resObj = sim;
+          }
+        } else {
+          resObj = generateSimulatedMaster(school, ctx, stats);
+        }
+        results.push(resObj);
+      }
+
+      results.forEach((r, idx) => {
+        const aiMeta = AI_LABELS[r.ai];
+        const card = document.createElement('div');
+        card.className = 'rounded-xl bg-stone-900/90 border border-amber-500/20 p-4 space-y-2.5 animate-ball-pop';
+        card.style.animationDelay = `${idx * 50}ms`;
+        card.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-amber-100">${r.school.name}</span>
+              <span class="text-[11px] px-2 py-0.5 rounded border ${aiMeta.color}">${aiMeta.name}${r.isLive ? ' (Live)' : ' (玄算)'}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              ${r.picks.map(n => `<span class="m6-ball m6-ball-sm ${getBallColorClass(n)}">${n}</span>`).join('')}
+            </div>
+          </div>
+          <p class="text-xs text-stone-300 leading-relaxed whitespace-pre-line">${r.reasoning}</p>
+        `;
+        container.appendChild(card);
+      });
+
+      const scoreMap = {};
+      for (let i = 1; i <= 49; i++) scoreMap[i] = 0;
+      const hitCounts = {};
+      results.forEach(r => {
+        r.picks.forEach((n, idx) => {
+          scoreMap[n] += (10 - idx * 0.5);
+          hitCounts[n] = (hitCounts[n] || 0) + 1;
+        });
+      });
+      // Boost numbers from interactive Zhouyi Oracle or Kau Cim if user cast them
+      state.oracleBonusNums.forEach(n => { scoreMap[n] += 3.5; });
+      state.lotBonusNums.forEach(n => { scoreMap[n] += 3.5; });
+
+      const ranked = Object.keys(scoreMap).map(k => {
+        const n = Number(k);
+        return {
+          num: n,
+          hits: hitCounts[n] || 0,
+          score: scoreMap[n] + (stats.freq[n] * 0.15) + ((hashString(`${n}-${ctx.purchaseDT}${ctx.randomSalt}`) % 100) / 1000)
+        };
+      }).sort((a, b) => b.score - a.score);
+
+      state.rankedPool = ranked;
+      const overlaps = ranked.filter(x => x.hits >= 2).map(x => x.num);
+
+      const debateBox = document.getElementById('debateSummaryBox');
+      const debateText = document.getElementById('debateText');
+      debateBox.classList.remove('hidden');
+
+      const overlapStr = overlaps.length > 0
+        ? `共有 ${overlaps.length} 個號碼獲兩位以上大師同時點中（${overlaps.join('、')}），共識度最高。`
+        : `各學派推算結果呈分散格局，取最高權重交集組合。`;
+
+      const bonusNote = (state.oracleBonusNums.length || state.lotBonusNums.length)
+        ? `\n• 玄壇靈感加成：已納入你剛求得的靈籤／卜辭吉碼作權重加分。`
+        : '';
+
+      debateText.textContent = `圓桌共有 ${results.length} 位大師完成推演${ctx.isRandomized ? '（因部分資料留空，已自動啟動天時隨機起局）' : ''}。${overlapStr}\n` +
+        `• 鐵板、周易與風水派聚焦「${ctx.branchName}」方位旺氣與命理五行；\n` +
+        `• 數據精算師結合近 ${stats.totalDraws} 期旺號（${stats.hot.slice(0,3).map(x=>x.num).join('、')}）與冷門遺漏號平衡結構。${bonusNote}\n` +
+        `綜合前 8 強候選池：${ranked.slice(0, 8).map(x => x.num).join('、')}。`;
+
+      state.lastResults = results;
+      const userPanel = document.getElementById('userDiscussionPanel');
+      document.getElementById('userThreadLog').innerHTML = '';
+      if (state.userJoin) userPanel.classList.remove('hidden');
+      else userPanel.classList.add('hidden');
+
+      refreshDefaultBankerLegs();
+      renderFinalTicket();
+
+      btn.disabled = false;
+      spinner.classList.add('hidden');
+      label.textContent = '🔄 重新召喚大師推算';
+      statusBadge.textContent = '推演完成';
+      showToast('玄壇圓桌推算已完成！', 'success');
+    }
+
+    function refreshDefaultBankerLegs() {
+      if (state.rankedPool.length === 0) return;
+      const top = state.rankedPool.map(x => x.num);
+      state.selectedBankers = top.slice(0, state.bankerCount);
+      state.selectedLegs = top.slice(state.bankerCount, state.bankerCount + state.legCount);
+    }
+
+    function nCr(n, r) {
+      if (r < 0 || r > n) return 0;
+      let res = 1;
+      for (let i = 1; i <= r; i++) res = (res * (n - i + 1)) / i;
+      return Math.round(res);
+    }
+
+    function renderFinalTicket() {
+      const container = document.getElementById('finalBallsContainer');
+      const costBadge = document.getElementById('betCostBadge');
+      const modeLabel = document.getElementById('ticketModeLabel');
+      const bankerControls = document.getElementById('bankerControls');
+      const bankerHint = document.getElementById('bankerHint');
+
+      if (state.rankedPool.length === 0) {
+        container.innerHTML = '<span class="text-xs text-stone-500">請先執行第 3 步圓桌推算以生成心水號碼。</span>';
+        return;
+      }
+
+      if (state.betMode === 'single6') {
+        bankerControls.classList.add('hidden');
+        bankerHint.classList.add('hidden');
+        modeLabel.textContent = '單式推薦（6 個正選號碼）';
+        costBadge.textContent = '1 注・HK$10';
+        const nums = state.rankedPool.slice(0, 6).map(x => x.num).sort((a, b) => a - b);
+        container.innerHTML = nums.map((n, i) => `<span class="m6-ball m6-ball-lg animate-ball-pop ${getBallColorClass(n)}" style="animation-delay:${i*65}ms">${n}</span>`).join('');
+      } else if (state.betMode === 'multi7') {
+        bankerControls.classList.add('hidden');
+        bankerHint.classList.add('hidden');
+        modeLabel.textContent = '7 個號碼複式（涵蓋 7 組單式）';
+        costBadge.textContent = '7 注・HK$70';
+        const nums = state.rankedPool.slice(0, 7).map(x => x.num).sort((a, b) => a - b);
+        container.innerHTML = nums.map((n, i) => `<span class="m6-ball m6-ball-lg animate-ball-pop ${getBallColorClass(n)}" style="animation-delay:${i*60}ms">${n}</span>`).join('');
+      } else {
+        bankerControls.classList.remove('hidden');
+        bankerHint.classList.remove('hidden');
+        const bCount = state.selectedBankers.length;
+        const lCount = state.selectedLegs.length;
+        const combos = nCr(lCount, 6 - bCount);
+        modeLabel.textContent = `膽拖組合（${bCount} 膽拖 ${lCount} 腳）`;
+        costBadge.textContent = `${combos} 注・HK$${combos * 10}`;
+
+        container.innerHTML = '';
+        const bGroup = document.createElement('div');
+        bGroup.className = 'flex flex-wrap items-center gap-2';
+        bGroup.innerHTML = `<span class="text-xs font-bold text-amber-300 mr-1">膽:</span>`;
+        [...state.selectedBankers].sort((a,b)=>a-b).forEach(n => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `m6-ball m6-ball-lg ${getBallColorClass(n)} ball-banker cursor-pointer hover:scale-105 transition`;
+          btn.textContent = n;
+          btn.title = '點擊降為拖腳';
+          btn.addEventListener('click', () => swapBankerLeg(n, 'toLeg'));
+          bGroup.appendChild(btn);
+        });
+
+        const sep = document.createElement('span');
+        sep.className = 'text-stone-500 font-bold mx-1';
+        sep.textContent = '拖';
+
+        const lGroup = document.createElement('div');
+        lGroup.className = 'flex flex-wrap items-center gap-2';
+        [...state.selectedLegs].sort((a,b)=>a-b).forEach(n => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `m6-ball m6-ball-lg ${getBallColorClass(n)} cursor-pointer hover:scale-105 transition opacity-95`;
+          btn.textContent = n;
+          btn.title = '點擊升為膽碼';
+          btn.addEventListener('click', () => swapBankerLeg(n, 'toBanker'));
+          lGroup.appendChild(btn);
+        });
+
+        container.appendChild(bGroup);
+        container.appendChild(sep);
+        container.appendChild(lGroup);
+      }
+    }
+
+    function swapBankerLeg(num, direction) {
+      if (direction === 'toBanker') {
+        if (state.selectedBankers.length >= 5) { showToast('膽碼最多只能選 5 個', 'error'); return; }
+        state.selectedLegs = state.selectedLegs.filter(x => x !== num);
+        state.selectedBankers.push(num);
+      } else {
+        if (state.selectedBankers.length <= 1) { showToast('膽拖模式至少需保留 1 個膽碼', 'error'); return; }
+        state.selectedBankers = state.selectedBankers.filter(x => x !== num);
+        state.selectedLegs.push(num);
+      }
+      document.getElementById('bankerCountSelect').value = String(Math.min(3, Math.max(1, state.selectedBankers.length)));
+      renderFinalTicket();
+    }
+
+    function getTicketSummaryText() {
+      if (state.rankedPool.length === 0) return '';
+      if (state.betMode === 'single6') {
+        const nums = state.rankedPool.slice(0, 6).map(x => x.num).sort((a,b)=>a-b);
+        return `【單式 6 碼】${nums.join(', ')} (HK$10)`;
+      }
+      if (state.betMode === 'multi7') {
+        const nums = state.rankedPool.slice(0, 7).map(x => x.num).sort((a,b)=>a-b);
+        return `【複式 7 碼】${nums.join(', ')} (7注 HK$70)`;
+      }
+      const b = [...state.selectedBankers].sort((a,b)=>a-b);
+      const l = [...state.selectedLegs].sort((a,b)=>a-b);
+      const combos = nCr(l.length, 6 - b.length);
+      return `【${b.length}膽拖${l.length}腳】膽: ${b.join(', ')} | 腳: ${l.join(', ')} (${combos}注 HK$${combos * 10})`;
+    }
+
+    // Tabs for Oracle & Lot
+    document.getElementById('tabOracleBtn').addEventListener('click', () => {
+      document.getElementById('oraclePanel').classList.remove('hidden');
+      document.getElementById('lotPanel').classList.add('hidden');
+      document.getElementById('tabOracleBtn').className = 'px-3 py-1.5 rounded-lg font-semibold transition bg-gradient-to-r from-red-800 to-amber-700 text-amber-100';
+      document.getElementById('tabLotBtn').className = 'px-3 py-1.5 rounded-lg font-semibold transition text-stone-400 hover:text-amber-200';
+    });
+    document.getElementById('tabLotBtn').addEventListener('click', () => {
+      document.getElementById('lotPanel').classList.remove('hidden');
+      document.getElementById('oraclePanel').classList.add('hidden');
+      document.getElementById('tabLotBtn').className = 'px-3 py-1.5 rounded-lg font-semibold transition bg-gradient-to-r from-red-800 to-amber-700 text-amber-100';
+      document.getElementById('tabOracleBtn').className = 'px-3 py-1.5 rounded-lg font-semibold transition text-stone-400 hover:text-amber-200';
+    });
+
+    document.getElementById('castOracleBtn').addEventListener('click', castAnimatedOracle);
+    document.getElementById('shakeLotBtn').addEventListener('click', shakeFortuneLot);
+    document.getElementById('applyOracleSeedBtn').addEventListener('click', () => {
+      if (state.oracleBonusNums.length > 0) {
+        const seedVal = state.oracleBonusNums.reduce((a, b) => a + b, 0);
+        document.getElementById('ichingSeed').value = String(seedVal);
+        showToast(`已將卦象靈數 ${seedVal} 套入起卦心水數！`, 'success');
+      }
+    });
+
+    // Mode toggles
+    document.getElementById('modeSimBtn').addEventListener('click', () => {
+      state.mode = 'sim';
+      document.getElementById('modeSimBtn').className = 'px-2.5 py-1.5 rounded-md font-medium transition bg-amber-500 text-stone-950';
+      document.getElementById('modeLiveBtn').className = 'px-2.5 py-1.5 rounded-md font-medium transition text-amber-100/80 hover:text-white';
+      showToast('已切換至「模擬玄算」模式');
+    });
+    document.getElementById('modeLiveBtn').addEventListener('click', () => {
+      state.mode = 'live';
+      document.getElementById('modeLiveBtn').className = 'px-2.5 py-1.5 rounded-md font-medium transition bg-amber-500 text-stone-950';
+      document.getElementById('modeSimBtn').className = 'px-2.5 py-1.5 rounded-md font-medium transition text-amber-100/80 hover:text-white';
+      const count = ['deepseek', 'openai', 'gemini', 'claude'].filter(k => (state.apiKeys[k] || '').trim().length > 4).length;
+      if (count === 0) showToast('你尚未設定 API Key，請先按「🔑 API 設定」填入', 'error');
+      else showToast('已切換至「真實 API」模式');
+    });
+
+    document.getElementById('bettingBranch').addEventListener('change', (e) => {
+      const customInput = document.getElementById('customBranchInput');
+      if (e.target.value === 'online') customInput.classList.remove('hidden');
+      else customInput.classList.add('hidden');
+    });
+
+    document.getElementById('selectAllSchoolsBtn').addEventListener('click', () => {
+      state.schools.forEach(s => s.checked = true);
+      renderSchools();
+    });
+    document.getElementById('clearSchoolsBtn').addEventListener('click', () => {
+      state.schools.forEach(s => s.checked = false);
+      renderSchools();
+    });
+
+    document.getElementById('clearAllInputsBtn').addEventListener('click', () => {
+      document.getElementById('birthYear').value = '';
+      document.getElementById('birthMonth').value = '';
+      document.getElementById('birthDay').value = '';
+      document.getElementById('birthTime').value = '';
+      document.getElementById('gender').value = 'random';
+      document.getElementById('birthPlace').value = '';
+      document.getElementById('bettingBranch').value = 'random';
+      document.getElementById('customBranchInput').value = '';
+      document.getElementById('customBranchInput').classList.add('hidden');
+      document.getElementById('purchaseDateTime').value = '';
+      document.getElementById('ichingSeed').value = '';
+      showToast('已清空所有資料，按「召喚大師」即會全隨機起局！');
+    });
+
+    document.getElementById('fillSampleBtn').addEventListener('click', () => {
+      document.getElementById('birthYear').value = 1988;
+      document.getElementById('birthMonth').value = 10;
+      document.getElementById('birthDay').value = 8;
+      document.getElementById('birthTime').value = '09:15';
+      document.getElementById('gender').value = 'male';
+      document.getElementById('birthPlace').value = '香港';
+      document.getElementById('bettingBranch').selectedIndex = 1;
+      document.getElementById('customBranchInput').classList.add('hidden');
+      document.getElementById('purchaseDateTime').value = '2026-11-24T17:30';
+      document.getElementById('ichingSeed').value = '168';
+      showToast('已載入範例資料！');
+    });
+
+    document.getElementById('runRoundtableBtn').addEventListener('click', runRoundtable);
+
+    document.querySelectorAll('.bet-mode-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.betMode = btn.dataset.betMode;
+        document.querySelectorAll('.bet-mode-tab').forEach(b => {
+          b.className = b === btn
+            ? 'bet-mode-tab py-2 px-3 rounded-lg text-xs font-semibold transition bg-amber-500 text-stone-950'
+            : 'bet-mode-tab py-2 px-3 rounded-lg text-xs font-semibold transition text-stone-300 hover:text-white';
+        });
+        renderFinalTicket();
+      });
+    });
+
+    document.getElementById('bankerCountSelect').addEventListener('change', (e) => {
+      state.bankerCount = Number(e.target.value);
+      refreshDefaultBankerLegs();
+      renderFinalTicket();
+    });
+    document.getElementById('legCountSelect').addEventListener('change', (e) => {
+      state.legCount = Number(e.target.value);
+      refreshDefaultBankerLegs();
+      renderFinalTicket();
+    });
+
+    document.getElementById('reshufflePoolBtn').addEventListener('click', () => {
+      if (state.rankedPool.length < 10) { showToast('請先執行圓桌推算', 'error'); return; }
+      const top12 = state.rankedPool.slice(0, 12);
+      for (let i = top12.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [top12[i], top12[j]] = [top12[j], top12[i]];
+      }
+      state.rankedPool = [...top12, ...state.rankedPool.slice(12)];
+      refreshDefaultBankerLegs();
+      renderFinalTicket();
+      showToast('已從前 12 強候選池重新配搭組合');
+    });
+
+    document.getElementById('copyTicketBtn').addEventListener('click', () => {
+      const text = getTicketSummaryText();
+      if (!text) { showToast('尚無號碼可複製', 'error'); return; }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => showToast('已複製號碼：' + text, 'success')).catch(() => fallbackCopy(text));
+      } else {
+        fallbackCopy(text);
+      }
+    });
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast('已複製號碼：' + text, 'success'); }
+      catch (e) { showToast('複製失敗，請手動選取', 'error'); }
+      ta.remove();
+    }
+
+    document.getElementById('saveTicketBtn').addEventListener('click', () => {
+      const text = getTicketSummaryText();
+      if (!text) { showToast('尚無號碼可儲存', 'error'); return; }
+      state.savedTickets.unshift({ time: new Date().toLocaleTimeString('zh-HK', { hour12: false }), text });
+      document.getElementById('savedTicketsSection').classList.remove('hidden');
+      document.getElementById('savedTicketsList').innerHTML = state.savedTickets.map(item => `
+        <div class="flex items-center justify-between bg-stone-900/80 border border-stone-800 rounded-lg px-3 py-1.5 text-xs">
+          <span class="text-amber-200">${item.text}</span>
+          <span class="text-[10px] text-stone-500">${item.time}</span>
+        </div>
+      `).join('');
+      showToast('已儲存至心水紀錄', 'success');
+    });
+
+    document.getElementById('openApiModalBtn').addEventListener('click', () => document.getElementById('apiModal').classList.remove('hidden'));
+    document.getElementById('closeApiModalBtn').addEventListener('click', () => document.getElementById('apiModal').classList.add('hidden'));
+    document.getElementById('saveApiKeysBtn').addEventListener('click', () => {
+      state.apiKeys.deepseek = document.getElementById('keyDeepseek').value.trim();
+      state.apiKeys.openai = document.getElementById('keyOpenai').value.trim();
+      state.apiKeys.gemini = document.getElementById('keyGemini').value.trim();
+      state.apiKeys.claude = document.getElementById('keyClaude').value.trim();
+      state.apiKeys.claudeProxy = document.getElementById('claudeProxyUrl').value.trim() || 'https://api.anthropic.com/v1/messages';
+      persistKeys(document.getElementById('persistKeysCheckbox').checked);
+      document.getElementById('apiModal').classList.add('hidden');
+      showToast('API Key 設定已更新', 'success');
+    });
+    document.getElementById('clearApiKeysBtn').addEventListener('click', () => {
+      state.apiKeys = { deepseek: '', openai: '', gemini: '', claude: '', claudeProxy: 'https://api.anthropic.com/v1/messages' };
+      syncKeyInputs();
+      persistKeys(false);
+      showToast('已清除所有 API Key');
+    });
+
+    document.getElementById('openHistoryModalBtn').addEventListener('click', () => document.getElementById('historyModal').classList.remove('hidden'));
+    document.getElementById('closeHistoryModalBtn').addEventListener('click', () => document.getElementById('historyModal').classList.add('hidden'));
+    document.getElementById('resetHistoryBtn').addEventListener('click', () => {
+      state.draws = [...DEFAULT_DRAWS];
+      renderStatsAndChart();
+      showToast('已重設為預設近 10 期開獎資料');
+    });
+    document.getElementById('importHistoryBtn').addEventListener('click', () => {
+      const raw = document.getElementById('csvImportInput').value.trim();
+      if (!raw) { showToast('請貼上開獎資料', 'error'); return; }
+      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      let added = 0;
+      lines.forEach(line => {
+        const parts = line.split(',').map(p => p.trim());
+        if (parts.length >= 9) {
+          const nums = parts.slice(2, 8).map(Number).filter(n => n >= 1 && n <= 49);
+          const special = Number(parts[8]);
+          if (nums.length === 6 && special >= 1 && special <= 49) {
+            state.draws.unshift({ id: parts[0], date: parts[1], nums, special });
+            added++;
+          }
+        }
+      });
+      if (added > 0) {
+        document.getElementById('csvImportInput').value = '';
+        renderStatsAndChart();
+        showToast(`成功匯入 ${added} 期開獎資料！`, 'success');
+      } else {
+        showToast('格式不符，請確認每行有 9 欄（期數,日期,6個號碼,特別號）', 'error');
+      }
+    });
+
+    document.querySelectorAll('.ai-invite-cb').forEach(cb => {
+      cb.addEventListener('change', () => {
+        state.invitedAis = Array.from(document.querySelectorAll('.ai-invite-cb:checked')).map(el => el.value);
+        renderSchools();
+      });
+    });
+
+    document.getElementById('userJoinToggle').addEventListener('change', (e) => {
+      state.userJoin = e.target.checked;
+      const panel = document.getElementById('userDiscussionPanel');
+      if (state.rankedPool.length > 0) {
+        if (state.userJoin) panel.classList.remove('hidden');
+        else panel.classList.add('hidden');
+      }
+    });
+
+    function renderAttachmentPreviews() {
+      const box = document.getElementById('attachmentPreviewList');
+      const clearBtn = document.getElementById('clearAttachmentsBtn');
+      if (state.userAttachments.length === 0) {
+        box.classList.add('hidden');
+        clearBtn.classList.add('hidden');
+        box.innerHTML = '';
+        return;
+      }
+      box.classList.remove('hidden');
+      clearBtn.classList.remove('hidden');
+      box.innerHTML = state.userAttachments.map((att, idx) => {
+        if (att.kind === 'image') {
+          return `<div class="relative rounded-lg border border-amber-500/35 bg-stone-900 p-1 flex items-center gap-1.5">
+            <img src="${att.dataUrl}" alt="${att.name}" class="w-9 h-9 object-cover rounded" />
+            <span class="text-[10px] text-amber-100 max-w-[90px] truncate">${att.name}</span>
+          </div>`;
+        }
+        return `<div class="rounded-lg border border-amber-500/35 bg-stone-900 px-2 py-1 text-[10px] text-amber-200 flex items-center gap-1">
+          <span>📄</span><span class="max-w-[120px] truncate">${att.name}</span>
+        </div>`;
+      }).join('');
+    }
+
+    document.getElementById('userAttachmentInput').addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files || []);
+      for (const file of files) {
+        if (file.type.startsWith('image/')) {
+          const dataUrl = await new Promise(res => {
+            const r = new FileReader();
+            r.onload = () => res(r.result);
+            r.readAsDataURL(file);
+          });
+          state.userAttachments.push({ kind: 'image', name: file.name, dataUrl, text: `[圖片附件: ${file.name}]` });
+        } else if (file.name.toLowerCase().endsWith('.pdf')) {
+          let extracted = '';
+          try {
+            if (window.pdfjsLib) {
+              pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+              const buf = await file.arrayBuffer();
+              const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+              const maxPages = Math.min(pdf.numPages, 5);
+              for (let p = 1; p <= maxPages; p++) {
+                const page = await pdf.getPage(p);
+                const tc = await page.getTextContent();
+                extracted += tc.items.map(it => it.str).join(' ') + '\n';
+              }
+              extracted = extracted.trim().slice(0, 3000);
+            }
+          } catch (err) {
+            extracted = '';
+          }
+          state.userAttachments.push({
+            kind: 'pdf',
+            name: file.name,
+            text: extracted || `[PDF 檔案: ${file.name}（掃描版或未含純文字層）]`
+          });
+        } else {
+          const txt = await file.text();
+          state.userAttachments.push({ kind: 'doc', name: file.name, text: txt.slice(0, 3000) });
+        }
+      }
+      renderAttachmentPreviews();
+      e.target.value = '';
+    });
+
+    document.getElementById('clearAttachmentsBtn').addEventListener('click', () => {
+      state.userAttachments = [];
+      renderAttachmentPreviews();
+    });
+
+    document.getElementById('analysisDrawsInput').addEventListener('change', () => {
+      const val = document.getElementById('analysisDrawsInput').value.trim();
+      if (!val) document.getElementById('analysisDrawsInput').value = '20';
+      renderStatsAndChart();
+    });
+    document.querySelectorAll('.draw-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('analysisDrawsInput').value = btn.dataset.draws;
+        renderStatsAndChart();
+        showToast(`已切換統計近 ${btn.dataset.draws} 期開獎數據`);
+      });
+    });
+
+    document.getElementById('sendUserReplyBtn').addEventListener('click', async () => {
+      const comment = document.getElementById('userCommentInput').value.trim();
+      const boostRaw = document.getElementById('userBoostNumsInput').value.trim();
+      const atts = [...state.userAttachments];
+      if (!comment && !boostRaw && atts.length === 0) {
+        showToast('請輸入發言、心水號碼或附上圖片／PDF／書本檔案', 'error');
+        return;
+      }
+      const boostNums = boostRaw
+        .split(/[,，\s]+/)
+        .map(Number)
+        .filter(n => Number.isInteger(n) && n >= 1 && n <= 49);
+
+      const log = document.getElementById('userThreadLog');
+      const userBubble = document.createElement('div');
+      userBubble.className = 'rounded-lg bg-amber-500/15 border border-amber-400/35 p-2.5 text-xs space-y-1.5';
+      const attHtml = atts.map(a => a.kind === 'image'
+        ? `<img src="${a.dataUrl}" alt="${a.name}" class="w-16 h-16 object-cover rounded border border-amber-400/40" />`
+        : `<span class="inline-block px-2 py-0.5 rounded bg-stone-900 border border-amber-500/30 text-[10px] text-amber-200">📄 ${a.name}</span>`
+      ).join('');
+      userBubble.innerHTML = `
+        <div class="font-bold text-amber-300">🙋 你（求測者）發言：</div>
+        ${comment ? `<p class="text-stone-100">${comment}</p>` : ''}
+        ${attHtml ? `<div class="flex flex-wrap gap-1.5 pt-1">${attHtml}</div>` : ''}
+        ${boostNums.length ? `<div class="flex items-center gap-1 pt-1"><span class="text-amber-200/80">指定心水碼：</span>${boostNums.map(n => `<span class="m6-ball m6-ball-sm ${getBallColorClass(n)}">${n}</span>`).join('')}</div>` : ''}
+      `;
+      log.appendChild(userBubble);
+
+      // Extract numbers mentioned inside attached text/PDFs if any
+      const docExtractedNums = [];
+      atts.forEach(a => {
+        if (a.kind !== 'image' && a.text) {
+          const matches = a.text.match(/\b([1-9]|[1-4][0-9])\b/g) || [];
+          matches.slice(0, 6).forEach(m => docExtractedNums.push(Number(m)));
+        }
+      });
+
+      const allBoost = [...new Set([...boostNums, ...docExtractedNums.slice(0, 2)])];
+      if (allBoost.length > 0) {
+        state.rankedPool.forEach(item => {
+          if (boostNums.includes(item.num)) item.score += 18;
+          else if (docExtractedNums.includes(item.num)) item.score += 5;
+        });
+        state.rankedPool.sort((a, b) => b.score - a.score);
+        refreshDefaultBankerLegs();
+        renderFinalTicket();
+      }
+
+      const attSummary = atts.map(a => a.kind === 'image' ? `[圖片: ${a.name}]` : `[文件 ${a.name} 摘錄: ${a.text.slice(0, 400)}]`).join('\n');
+      const leadAi = state.invitedAis[0] || 'deepseek';
+      let aiReplyText = '';
+      if (state.mode === 'live') {
+        try {
+          const prompt = `你是六合彩玄學圓桌的主席（${AI_LABELS[leadAi].name}）。求測者剛加入討論並說：「${comment || '我附上了參考資料'}」，心水碼為 [${boostNums.join(', ')}]。附件內容：${attSummary || '無'}。請用繁體中文親切回應（60-100字）並結合目前前 6 強組合 [${state.rankedPool.slice(0,6).map(x=>x.num).join(', ')}]。`;
+          aiReplyText = await callLiveAI(leadAi, prompt);
+        } catch (err) {
+          aiReplyText = `收到你的見解${atts.length ? `與 ${atts.length} 份附件參考` : ''}！${boostNums.length ? `已將你的心水碼 ${boostNums.join('、')} 提升為主力權重，` : ''}圓桌已重新調整最終組合供你參考。`;
+        }
+      } else {
+        const fileNames = atts.map(a => a.name).join('、');
+        aiReplyText = `（${AI_LABELS[leadAi].name} 聯席回應）：已閱覽你的發言${atts.length ? `及附件（${fileNames}）` : ''}！${boostNums.length ? `我們已將你點名的 ${boostNums.join('、')} 號納入核心膽腳池並提高權重，` : ''}${docExtractedNums.length ? `並從文獻中捕捉到數理靈感（${docExtractedNums.slice(0,3).join('、')}），` : ''}推薦組合已即時為你更新。`;
+      }
+
+      const aiBubble = document.createElement('div');
+      aiBubble.className = 'rounded-lg bg-stone-900 border border-stone-700 p-2.5 text-xs space-y-1 animate-ball-pop';
+      aiBubble.innerHTML = `<div class="font-bold text-amber-200">🤖 ${AI_LABELS[leadAi].name}（代表圓桌回應）：</div><p class="text-stone-300 leading-relaxed">${aiReplyText}</p>`;
+      log.appendChild(aiBubble);
+      log.scrollTop = log.scrollHeight;
+
+      document.getElementById('userCommentInput').value = '';
+      document.getElementById('userBoostNumsInput').value = '';
+      state.userAttachments = [];
+      renderAttachmentPreviews();
+      showToast('AI 大師已閱覽附件並回應更新！', 'success');
+    });
+
+    loadSavedKeys();
+    renderSchools();
+    renderStatsAndChart();
+  </script>
+</body>
+</html>
